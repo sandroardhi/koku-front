@@ -90,7 +90,7 @@ const route = useRoute()
       </ul>
     </aside>
 
-    <div class="min-h-screen col-span-8 bg-[#F5F5DC]">
+    <div class="col-span-8 bg-[#F5F5DC]">
       <RouterView />
     </div>
   </div>

@@ -26,7 +26,7 @@ const router = createRouter({
         {
           path: '',
           name: 'user-management',
-          component: () => import('../views/dashboard/admin-dashbboard/UserManagementView.vue')
+          component: () => import('../views/dashboard/admin-dashboard/UserManagementView.vue')
         },
         {
           path: '/store-management',

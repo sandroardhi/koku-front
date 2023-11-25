@@ -40,16 +40,23 @@ onMounted(() => {
       <p class="text-3xl">Today's pick</p>
     </div>
 
-    <div class="flex space-x-4 mb-3">
-      <div v-for="kantin in kantins" :key="kantin.id">
+    <div class="grid grid-cols-4 gap-4 mb-3">
+      <div v-for="kantin in kantins" :key="kantin.id" class="col-span-2">
         <router-link
           to="#"
           class="flex flex-col items-center bg-white border max-h-[150px] border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           <img
+            v-if="kantin.foto_kantin == 'default.jpg'"
             class="object-cover w-full h-[150px] to-transparent rounded-t-lg md:w-48 md:rounded-none md:rounded-l-lg"
             src="images/default.jpg"
-            alt=""
+            alt="Foto Kantin.."
+          />
+          <img
+            v-else
+            :src="`http://localhost:8000/storage/${kantin.foto_kantin}`"
+            class="object-cover w-full h-[150px] to-transparent rounded-t-lg md:w-48 md:rounded-none md:rounded-l-lg"
+            alt="Foto Kantin.."
           />
           <div class="flex flex-col justify-around p-4 leading-normal susus">
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
