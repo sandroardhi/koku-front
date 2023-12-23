@@ -58,4 +58,11 @@ defineProps({
     >
       {{ text }}
     </button>
+    <button
+      v-else-if="type == 'hidden'"
+      type="button"
+      class="hidden"
+    >
+      {{ text }}
+    </button>
 </template>

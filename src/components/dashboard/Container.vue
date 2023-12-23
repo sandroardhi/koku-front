@@ -9,5 +9,5 @@ defineProps({
     <p class="text-lg font-medium">{{ title }}</p>
   </div>
 
-    <slot />
+  <slot />
 </template>

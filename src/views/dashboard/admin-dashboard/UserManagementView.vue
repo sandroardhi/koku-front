@@ -1,10 +1,18 @@
 <script setup>
-import Container from '../../../components/dashboard/Container.vue'
 import axios from 'axios'
 import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import Container from '../../../components/dashboard/Container.vue'
+import Modal from '../../../components/common/Modal.vue'
+import Table from '../../../components/common/Table.vue'
 
-const users = ref({})
+const route = useRoute()
+const router = useRouter()
+const users = ref([])
+const roles = ref([])
+const selectedItem = ref({})
 const isLoading = ref(false)
+const status = ['active', 'pending', 'suspended']
 
 const config = {
   headers: {
@@ -20,70 +28,121 @@ const fetchAllUser = async () => {
   isLoading.value = false
 }
 
+const fetchAllRoles = async () => {
+  isLoading.value = true
+  const { data } = await axios.get('/api/admin/roles', config)
+  roles.value = data
+  isLoading.value = false
+}
+
+const toggleModal = (item) => {
+  selectedItem.value = {} // Clear previous value
+
+  // Your logic to toggle the modal, and you have access to 'item'
+  console.log('Toggling modal for item:', item)
+  selectedItem.value = { ...item }
+}
+
+const onUpdateUser = async () => {
+  isLoading.value = true
+  const { role_id, status } = selectedItem.value // Destructure the specific properties you need
+  
+  const data = {
+    role_id,
+    status
+  }
+  try {
+    await axios.put(`api/admin/user/${selectedItem.value.id}/update-role`, data, config)
+    
+    router.go()
+  } catch (e) {
+    console.error(e)
+  }
+  isLoading.value = false
+}
+const labels = [
+  { text: 'Nama', field: 'name' },
+  { text: 'Email', field: 'email' },
+  { text: 'Role', field: 'role' },
+  { text: 'Status', field: 'status' }
+]
+
 onMounted(() => {
   fetchAllUser()
+  fetchAllRoles()
 })
 </script>
 
 <template>
   <Container title="User Management">
-    <div class="w-[90%] mx-auto my-6 bg-white shadow-lg">
-      <table class="min-w-full divide-y divide-gray-200 mt-">
-        <thead>
-          <tr>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Name
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Email
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Role
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Status
-            </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Action
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="user in users" :key="user.id">
-            <td class="px-6 py-4 whitespace-nowrap">{{ user.name }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ user.email }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ user.tipe_user }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
-                >{{ user.status }}</span
-              >
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <button
-                class="px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500 focus:outline-none focus:shadow-outline-blue active:bg-blue-600 transition duration-150 ease-in-out"
-              >
-                Edit
-              </button>
-              <button
-                class="ml-2 px-4 py-2 font-medium text-white bg-red-600 rounded-md hover:bg-red-500 focus:outline-none focus:shadow-outline-red active:bg-red-600 transition duration-150 ease-in-out"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="w-full px-10 py-5 min-h-[200px]">
+      <div class="w-full bg-white shadow-xl rounded-lg p-5 min-h-[100px]">
+        <Table
+          :labels="labels"
+          :roles="roles"
+          :data="users"
+          :excerptLenght="20"
+          :actionButtons="[{ text: '', type: 'hidden' }]"
+        >
+          <template #customButton="{ item }">
+            <Modal buttonText="Edit" modalTitle="Edit User" :toggleModal="() => toggleModal(item)">
+              <template #modalBody>
+                <form
+                  class="p-4 md:p-5"
+                  enctype="multipart/form-data"
+                  :action="route.path"
+                  @submit.prevent="onUpdateUser"
+                >
+                  <div class="grid gap-4 mb-4 grid-cols-2">
+                    <div class="col-span-2">
+                      <label
+                        for="role"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                        >Role</label
+                      >
+                      <select
+                        id="role"
+                        name="role"
+                        v-model="selectedItem.role_id"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      >
+                        <option disabled value="">Choose a role</option>
+                        <option v-for="role in roles" :key="role.id" :value="role.id">
+                          {{ role.role }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-span-2">
+                      <label
+                        for="status"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                        >Status</label
+                      >
+                      <select
+                        id="status"
+                        name="status"
+                        v-model="selectedItem.status"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      >
+                        <option value="" selected disabled>Choose a status</option>
+                        <option v-for="s in status" :key="s" :value="s">{{ s }}</option>
+                      </select>
+                    </div>
+                    <div class="col-span-2 mt-2">
+                      <button
+                        type="submit"
+                        class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </template>
+            </Modal>
+          </template>
+        </Table>
+      </div>
     </div>
   </Container>
 </template>

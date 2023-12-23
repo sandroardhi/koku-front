@@ -6,7 +6,7 @@ const route = useRoute()
 </script>
 
 <template>
-  <div class="grid grid-cols-10">
+  <div class="grid grid-cols-10 overflow-hidden">
     <aside class="min-h-screen col-span-2 bg-[#004225] border-r-2 flex flex-col relative">
       <router-link to="/">
         <svg

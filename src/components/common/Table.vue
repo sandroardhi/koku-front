@@ -1,6 +1,7 @@
 <script setup>
 import Button from './Button.vue'
-defineProps({
+import Excerpt from './Excerpt.vue';
+const props = defineProps({
   labels: {
     type: Array,
     default: undefined
@@ -12,8 +13,31 @@ defineProps({
   actionButtons: {
     type: Array,
     default: undefined
-  }
+  },
+  roles: {
+    type: Array,
+    default: () => []
+  },
+  kategori: {
+    type: Array,
+    default: () => []
+  },
+
 })
+
+
+const getUserRole = (roleId) => {
+  const role = props.roles.find((r) => r.id === roleId)
+  return role ? role.role : '-'
+}
+const getProdukKategori = (kategori_id) => {
+  const kategori = props.kategori.find((k) => k.id === kategori_id)
+  return kategori ? kategori.nama : '-'
+}
+const formatter = new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+  });
 </script>
 
 <template>
@@ -33,7 +57,6 @@ defineProps({
         >
           Aksi
         </td>
-        <!-- New cell for action buttons -->
       </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
@@ -41,7 +64,7 @@ defineProps({
         <td
           v-for="(label, labelIndex) in labels"
           :key="labelIndex"
-          class="px-6 py-4 whitespace-nowrap"
+          class="px-6 py-4"
         >
           <template v-if="label.field === 'foto'">
             <img
@@ -50,15 +73,29 @@ defineProps({
               alt="Image"
             />
           </template>
+          <template v-else-if="label.field === 'role'">
+            <Excerpt :text="getUserRole(item.role_id)"/>
+            <!-- Display user's role -->
+            <!-- {{ excerpt(getUserRole(item.role_id)) }} -->
+          </template>
+          <template v-else-if="label.field === 'kategori'">
+            <Excerpt :text="getProdukKategori(item.kategori_id)"/>
+            <!-- Display user's role -->
+            <!-- {{ excerpt(getProdukKategori(item.kategori_id)) }} -->
+          </template>
+          <template v-else-if="label.field === 'harga'">
+            {{ formatter.format(item.harga) }}
+          </template>
           <template v-else>
-            {{ item[label.field] }}
+              <Excerpt :text="item[label.field]"/>
+            <!-- {{ excerpt(item[label.field]) }} -->
           </template>
         </td>
         <td class="px-6 py-4 whitespace-nowrap" v-if="actionButtons">
           <Button
             v-for="(button, buttonIndex) in actionButtons"
             :key="buttonIndex"
-            @click="handleButtonClick(item, button.callback)"
+            @click="() => button.handleClick(item.id)"
             :type="button.type"
             :text="button.text"
           />
