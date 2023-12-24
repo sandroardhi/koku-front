@@ -1,6 +1,6 @@
 <script setup>
 import Button from './Button.vue'
-import Excerpt from './Excerpt.vue';
+import Excerpt from './Excerpt.vue'
 const props = defineProps({
   labels: {
     type: Array,
@@ -22,9 +22,11 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-
+  excerptLength: {
+    type: Number,
+    default: 10
+  }
 })
-
 
 const getUserRole = (roleId) => {
   const role = props.roles.find((r) => r.id === roleId)
@@ -35,9 +37,9 @@ const getProdukKategori = (kategori_id) => {
   return kategori ? kategori.nama : '-'
 }
 const formatter = new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-  });
+  style: 'currency',
+  currency: 'IDR'
+})
 </script>
 
 <template>
@@ -61,34 +63,32 @@ const formatter = new Intl.NumberFormat('id-ID', {
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
       <tr v-for="(item, itemIndex) in data" :key="itemIndex">
-        <td
-          v-for="(label, labelIndex) in labels"
-          :key="labelIndex"
-          class="px-6 py-4"
-        >
+        <td v-for="(label, labelIndex) in labels" :key="labelIndex" class="px-6 py-4">
           <template v-if="label.field === 'foto'">
             <img
+              v-if="item[label.field] == 'default.jpg'"
+              class="h-28 object-contain"
+              alt="Image"
+              src="images/default.jpg"
+            />
+            <img
+              v-else
               :src="`http://localhost:8000/storage/${item[label.field]}`"
-              class="h-20"
+              class="h-28 object-contain"
               alt="Image"
             />
           </template>
           <template v-else-if="label.field === 'role'">
-            <Excerpt :text="getUserRole(item.role_id)"/>
-            <!-- Display user's role -->
-            <!-- {{ excerpt(getUserRole(item.role_id)) }} -->
+            <Excerpt :text="getUserRole(item.role_id)" :maxLength="excerptLength" />
           </template>
           <template v-else-if="label.field === 'kategori'">
-            <Excerpt :text="getProdukKategori(item.kategori_id)"/>
-            <!-- Display user's role -->
-            <!-- {{ excerpt(getProdukKategori(item.kategori_id)) }} -->
+            <Excerpt :text="getProdukKategori(item.kategori_id)" :maxLength="excerptLength" />
           </template>
           <template v-else-if="label.field === 'harga'">
             {{ formatter.format(item.harga) }}
           </template>
           <template v-else>
-              <Excerpt :text="item[label.field]"/>
-            <!-- {{ excerpt(item[label.field]) }} -->
+            <Excerpt :text="item[label.field]" :maxLength="excerptLength" />
           </template>
         </td>
         <td class="px-6 py-4 whitespace-nowrap" v-if="actionButtons">
