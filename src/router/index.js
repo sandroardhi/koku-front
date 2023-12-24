@@ -29,6 +29,11 @@ const router = createRouter({
           component: () => import('../views/dashboard/admin-dashboard/UserManagementView.vue')
         },
         {
+          path: '/kategori-management',
+          name: 'kategori-management',
+          component: () => import('../views/dashboard/admin-dashboard/KategoriManagementView.vue')
+        },
+        {
           path: '/store-management',
           name: 'store-management',
           component: () => import('../views/dashboard/penjual-dashboard/StoreManagementView.vue')

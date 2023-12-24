@@ -38,14 +38,12 @@ const fetchAllRoles = async () => {
 const toggleModal = (item) => {
   selectedItem.value = {} // Clear previous value
 
-  // Your logic to toggle the modal, and you have access to 'item'
-  console.log('Toggling modal for item:', item)
   selectedItem.value = { ...item }
 }
 
 const onUpdateUser = async () => {
   isLoading.value = true
-  const { role_id, status } = selectedItem.value // Destructure the specific properties you need
+  const { role_id, status } = selectedItem.value
   
   const data = {
     role_id,
@@ -81,7 +79,7 @@ onMounted(() => {
           :labels="labels"
           :roles="roles"
           :data="users"
-          :excerptLenght="20"
+          :excerptLength="20"
           :actionButtons="[{ text: '', type: 'hidden' }]"
         >
           <template #customButton="{ item }">

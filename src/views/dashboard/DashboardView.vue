@@ -8,6 +8,7 @@ const route = useRoute()
 <template>
   <div class="grid grid-cols-10 overflow-hidden">
     <aside class="min-h-screen col-span-2 bg-[#004225] border-r-2 flex flex-col relative">
+      <!-- back to home -->
       <router-link to="/">
         <svg
           viewBox="0 0 24 24"
@@ -28,8 +29,11 @@ const route = useRoute()
           </g>
         </svg>
       </router-link>
+      <!-- end of back to home -->
       <div class="w-full h-[2px] border"></div>
+
       <ul class="w-full min-h-screen p-3">
+        <!-- to user-management -->
         <SidebarList
           :to="{ name: 'user-management' }"
           spanText="User Management"
@@ -62,6 +66,56 @@ const route = useRoute()
             </svg>
           </template>
         </SidebarList>
+        <!-- end of to user-management -->
+
+        <!-- to kategori-management -->
+        <SidebarList
+          :to="{ name: 'kategori-management' }"
+          spanText="Kategori Management"
+          currentRoute="/kategori-management"
+        >
+          <template #svg>
+            <svg
+              viewBox="0 0 48 48"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="#9CA3AF"
+              class="w-8 group-hover:fill-black"
+              :class="route.path === '/kategori-management' ? 'fill-black' : ''"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+              <g id="SVGRepo_iconCarrier">
+                <title>category-list-solid</title>
+                <g id="Layer_2" data-name="Layer 2">
+                  <g id="invisible_box" data-name="invisible box">
+                    <rect width="48" height="48" fill="none"></rect>
+                  </g>
+                  <g id="icons_Q2" data-name="icons Q2">
+                    <path
+                      d="M24,10h0a2,2,0,0,1,2-2H42a2,2,0,0,1,2,2h0a2,2,0,0,1-2,2H26A2,2,0,0,1,24,10Z"
+                    ></path>
+                    <path
+                      d="M24,24h0a2,2,0,0,1,2-2H42a2,2,0,0,1,2,2h0a2,2,0,0,1-2,2H26A2,2,0,0,1,24,24Z"
+                    ></path>
+                    <path
+                      d="M24,38h0a2,2,0,0,1,2-2H42a2,2,0,0,1,2,2h0a2,2,0,0,1-2,2H26A2,2,0,0,1,24,38Z"
+                    ></path>
+                    <path
+                      d="M12,2a2.1,2.1,0,0,0-1.7,1L4.2,13a2.3,2.3,0,0,0,0,2,1.9,1.9,0,0,0,1.7,1H18a2.1,2.1,0,0,0,1.7-1,1.8,1.8,0,0,0,0-2l-6-10A1.9,1.9,0,0,0,12,2Z"
+                    ></path>
+                    <path d="M12,30a6,6,0,1,1,6-6A6,6,0,0,1,12,30Z"></path>
+                    <path
+                      d="M16,44H8a2,2,0,0,1-2-2V34a2,2,0,0,1,2-2h8a2,2,0,0,1,2,2v8A2,2,0,0,1,16,44Z"
+                    ></path>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </template>
+        </SidebarList>
+        <!-- end of to kategori-management -->
+
+        <!-- to store-management -->
         <SidebarList
           :to="{ name: 'store-management' }"
           spanText="Toko"
@@ -84,9 +138,7 @@ const route = useRoute()
             </svg>
           </template>
         </SidebarList>
-        <router-link to="#">
-          <li></li>
-        </router-link>
+        <!-- end of to store-management -->
       </ul>
     </aside>
 

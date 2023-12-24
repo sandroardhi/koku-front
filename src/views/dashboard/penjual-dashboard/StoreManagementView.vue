@@ -97,7 +97,7 @@ const produk = ref([])
 const produk_data = reactive({
   nama: '',
   harga: null,
-  kuantitas: null,
+  stok: null,
   deskripsi: '',
   kategori_id: '',
   foto: ''
@@ -124,7 +124,7 @@ const fetchProduct = async () => {
 const pushProduct = () => {
   if (
     produk_data.harga <= 0 ||
-    produk_data.kuantitas <= 0 ||
+    produk_data.stok <= 0 ||
     produk_data.nama == '' ||
     produk_data.deskripsi == '' ||
     produk_data.kategori_id == ''
@@ -141,7 +141,7 @@ const pushProduct = () => {
   // Clear the form fields
   produk_data.nama = ''
   produk_data.harga = null
-  produk_data.kuantitas = null
+  produk_data.stok = null
   ;(produk_data.deskripsi = ''),
     (produk_data.kategori_id = ''),
     // Reset the file input using the ref
@@ -162,7 +162,7 @@ const onSubmitProduk = async () => {
     // btw products nak kene sembarang yo iku jeneng, jeneng e bakal digae nak backend engkok . products soale lek produks elek wkakak
     formdata.append(`products[${index}][nama]`, product.nama)
     formdata.append(`products[${index}][harga]`, product.harga)
-    formdata.append(`products[${index}][kuantitas]`, product.kuantitas)
+    formdata.append(`products[${index}][stok]`, product.stok)
     formdata.append(`products[${index}][deskripsi]`, product.deskripsi)
     formdata.append(`products[${index}][kategori_id]`, product.kategori_id)
     formdata.append(`products[${index}][foto]`, product.foto)
@@ -210,7 +210,7 @@ const onSubmitProdukUpdate = async () => {
   formdata.append('deskripsi', selectedItem.value.deskripsi)
   formdata.append('kategori_id', selectedItem.value.kategori_id)
   formdata.append('harga', selectedItem.value.harga)
-  formdata.append('kuantitas', selectedItem.value.kuantitas)
+  formdata.append('stok', selectedItem.value.stok)
   formdata.append('foto', selectedItem.value.foto)
   //   for (let entry of formdata.entries()) {
   //   const [key, value] = entry;
@@ -231,7 +231,7 @@ const onSubmitProdukUpdate = async () => {
 
 // hapus produk
 const hapusProduk = async (id) => {
-  if (confirm('are you sure?'))
+  if (confirm('yakin mau hapus produkmu?'))
     try {
       await axios.delete(`/api/produk/${id}`, config)
 
@@ -260,7 +260,7 @@ const labels = [
   { text: 'Deskripsi', field: 'deskripsi' },
   { text: 'Kategori', field: 'kategori' },
   { text: 'Harga', field: 'harga' },
-  { text: 'Kuantitas', field: 'kuantitas' }
+  { text: 'Stok', field: 'stok' }
 ]
 
 const getProdukKategori = (kategoriArray, kategori_id) => {
@@ -496,7 +496,7 @@ onMounted(async () => {
           <div class="w-full flex flex-col">
             <div class="w-full min-h-[40%] p-4">
               <p class="text-xl">Nama</p>
-              <p class="text-3xl font-bold mt-5 break-all">{{ kantin[0].nama }}</p>
+              <span class="text-3xl font-bold mt-5 break-all"><Excerpt :text="kantin[0].nama" :maxLength="30"/></span>
             </div>
             <div class="w-full min-h-[40%] p-4">
               <p class="text-xl">Deskripsi</p>
@@ -585,22 +585,22 @@ onMounted(async () => {
                 </div>
                 <div class="col-span-2">
                   <label
-                    for="kuantitas"
+                    for="stok"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Kuantitas produkmu</label
+                    >Stok produkmu</label
                   >
                   <input
-                    id="kuantitas"
+                    id="stok"
                     type="number"
                     min="1"
-                    v-model="produk_data.kuantitas"
+                    v-model="produk_data.stok"
                     class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="10"
                   />
                   <Alert
-                    v-if="produk_data.kuantitas !== null && produk_data.kuantitas <= 0"
+                    v-if="produk_data.stok !== null && produk_data.stok <= 0"
                     type="danger"
-                    message="Kuantitas tidak boleh negatif atau desimal."
+                    message="Stok tidak boleh negatif atau desimal."
                   />
                 </div>
                 <div class="col-span-2">
@@ -658,7 +658,7 @@ onMounted(async () => {
                         <p>Deskripsi: {{ excerpt(produk.deskripsi, 30) }}</p>
                         <p>Kategori: {{ computedGetProdukKategori(produk.kategori_id) }}</p>
                         <p>Harga: {{ formatter.format(produk.harga) }}</p>
-                        <p>Kuantitas: {{ produk.kuantitas }}</p>
+                        <p>Stok: {{ produk.stok }}</p>
                         <p>Foto: {{ produk.foto ? produk.foto.name : 'No file selected' }}</p>
                       </div>
                       <button
@@ -711,13 +711,13 @@ onMounted(async () => {
               </div>
             </form>
           </template>
-        </Modal>p
+        </Modal>
         </div>
       </div>
       <!-- end of belum ada produk -->
 
       <!-- ada produk -->
-      <div class="w-full bg-white shadow-xl rounded-lg p-5 min-h-[100px]" v-else>
+      <div class="w-full bg-white shadow-xl rounded-lg p-5 min-h-[100px] overflow-x-auto" v-else>
         <Modal buttonText="Tambah produk" modalTitle="Tambah produk">
           <template #modalBody>
             <form
@@ -791,22 +791,22 @@ onMounted(async () => {
                 </div>
                 <div class="col-span-2">
                   <label
-                    for="kuantitas"
+                    for="stok"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Kuantitas produkmu</label
+                    >Stok produkmu</label
                   >
                   <input
-                    id="kuantitas"
+                    id="stok"
                     type="number"
                     min="1"
-                    v-model="produk_data.kuantitas"
+                    v-model="produk_data.stok"
                     class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="10"
                   />
                   <Alert
-                    v-if="produk_data.kuantitas !== null && produk_data.kuantitas <= 0"
+                    v-if="produk_data.stok !== null && produk_data.stok <= 0"
                     type="danger"
-                    message="Kuantitas tidak boleh negatif atau desimal."
+                    message="Stok tidak boleh negatif atau desimal."
                   />
                 </div>
                 <div class="col-span-2">
@@ -864,7 +864,7 @@ onMounted(async () => {
                         <p>Deskripsi: {{ excerpt(produk.deskripsi, 30) }}</p>
                         <p>Kategori: {{ computedGetProdukKategori(produk.kategori_id) }}</p>
                         <p>Harga: {{ formatter.format(produk.harga) }}</p>
-                        <p>Kuantitas: {{ produk.kuantitas }}</p>
+                        <p>Stok: {{ produk.stok }}</p>
                         <p>Foto: {{ produk.foto ? produk.foto.name : 'No file selected' }}</p>
                       </div>
                       <button
@@ -1016,22 +1016,22 @@ onMounted(async () => {
                     </div>
                     <div class="col-span-2">
                       <label
-                        for="kuantitas"
+                        for="stok"
                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >Kuantitas produkmu</label
+                        >Stok produkmu</label
                       >
                       <input
-                        id="kuantitas"
+                        id="stok"
                         type="number"
                         min="1"
-                        v-model="selectedItem.kuantitas"
+                        v-model="selectedItem.stok"
                         class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="10"
                       />
                       <Alert
-                        v-if="selectedItem.kuantitas !== null && selectedItem.kuantitas <= 0"
+                        v-if="selectedItem.stok !== null && selectedItem.stok <= 0"
                         type="danger"
-                        message="Kuantitas tidak boleh negatif atau desimal."
+                        message="Stok tidak boleh negatif atau desimal."
                       />
                     </div>
                     <div class="col-span-2">
