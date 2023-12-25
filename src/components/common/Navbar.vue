@@ -2,6 +2,9 @@
 import { RouterLink, useRouter } from 'vue-router'
 import { ref } from 'vue'
 import axios from 'axios'
+import { useAuthRepository } from '@/composables/useAuthRepository'
+
+const auth_repository = useAuthRepository()
 
 const router = useRouter()
 const user = JSON.parse(localStorage.getItem('user'))
@@ -12,12 +15,7 @@ const dropdownToggle = () => {
 }
 const logout = async () => {
   try {
-    await axios.get('api/auth/logout', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      },
-      baseURL: 'http://localhost:8000'
-    });
+    await auth_repository.logout()
 
     localStorage.removeItem('user');
     localStorage.removeItem('access_token');
@@ -51,21 +49,14 @@ const logout = async () => {
             <router-link
               to="#"
               class="block py-2 pl-3 pr-4 text-black rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-[#FFB000] md:p-0"
-              >About</router-link
+              >Kantin</router-link
             >
           </li>
           <li class="flex items-center justify-center">
             <router-link
               to="#"
               class="block py-2 pl-3 pr-4 text-black rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-[#FFB000] md:p-0"
-              >Services</router-link
-            >
-          </li>
-          <li class="flex items-center justify-center">
-            <router-link
-              to="#"
-              class="block py-2 pl-3 pr-4 text-black rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-[#FFB000] md:p-0"
-              >Contact</router-link
+              >Kategori</router-link
             >
           </li>
           <li class="flex items-center justify-center">
@@ -94,10 +85,13 @@ const logout = async () => {
               >
                 Hello, {{ user.name }}
                 <ul class="absolute w-full left-0 top-12 border">
-                  <li class="p-2 bg-white text-black" @click="logout">Logout</li>
                   <router-link to="/dashboard">
-                    <li class="p-2 bg-white text-black border-t">Dashboard</li>
+                    <li class="p-2 bg-white text-black border-b">Dashboard</li>
                   </router-link>
+                  <router-link to="/profile">
+                    <li class="p-2 bg-white text-black border-b">Profile</li>
+                  </router-link>
+                  <li class="p-2 bg-white text-black" @click="logout">Logout</li>
                 </ul>
               </button>
             </div>

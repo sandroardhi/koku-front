@@ -1,10 +1,12 @@
 <script setup>
-import axios from 'axios'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Container from '../../../components/dashboard/Container.vue'
 import Modal from '../../../components/common/Modal.vue'
 import Table from '../../../components/common/Table.vue'
+import { useAdminRepository } from '@/composables/useAdminRepository'
+
+const admin_repository = useAdminRepository()
 
 const route = useRoute()
 const router = useRouter()
@@ -14,23 +16,17 @@ const selectedItem = ref({})
 const isLoading = ref(false)
 const status = ['active', 'pending', 'suspended']
 
-const config = {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('access_token')}`
-  },
-  baseURL: 'http://localhost:8000'
-}
 
 const fetchAllUser = async () => {
   isLoading.value = true
-  const { data } = await axios.get('/api/admin/users', config)
+  const { data } = await admin_repository.users()
   users.value = data
   isLoading.value = false
 }
 
 const fetchAllRoles = async () => {
   isLoading.value = true
-  const { data } = await axios.get('/api/admin/roles', config)
+  const { data } = await admin_repository.roles()
   roles.value = data
   isLoading.value = false
 }
@@ -50,7 +46,7 @@ const onUpdateUser = async () => {
     status
   }
   try {
-    await axios.put(`api/admin/user/${selectedItem.value.id}/update-role`, data, config)
+    await admin_repository.update_role(selectedItem.value.id, data)
     
     router.go()
   } catch (e) {

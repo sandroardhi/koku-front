@@ -1,10 +1,12 @@
 <script setup>
-import axios from 'axios'
 import { ref, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Container from '../../../components/dashboard/Container.vue'
 import Modal from '../../../components/common/Modal.vue'
 import Table from '../../../components/common/Table.vue'
+import { useKategoriRepository } from '@/composables/useKategoriRepository'
+
+const kategori_repository = useKategoriRepository()
 
 const isLoading = ref(false)
 const route = useRoute()
@@ -17,17 +19,10 @@ const labels = [
   { text: 'Nama', field: 'nama' }
 ]
 
-const config = {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('access_token')}`
-  },
-  baseURL: 'http://localhost:8000'
-}
-
 // fetch kategori
 const fetchKategori = async () => {
   isLoading.value = true
-  const { data } = await axios.get('/api/kategori/fetch-kategori', config)
+  const { data } = await kategori_repository.index()
   kategori.value = data
   isLoading.value = false
 }
@@ -49,7 +44,7 @@ const onSubmitKategori = async () => {
   formdata.append('nama', kategori_data.nama)
   formdata.append('foto', kategori_data.foto)
   try {
-    await axios.post('api/kategori/store-kategori', formdata, config)
+    await kategori_repository.store(formdata)
 
     router.go()
   } catch (e) {
@@ -71,7 +66,7 @@ const onSubmitKategoriUpdate = async () => {
   formdata.append('foto', selectedKategori.value.foto)
 
   try {
-    await axios.post(`api/kategori/update-kategori/${selectedKategori.value.id}`, formdata, config)
+    await kategori_repository.update(selectedKategori.value.id, formdata)
 
     router.go()
   } catch (e) {
@@ -87,7 +82,7 @@ const hapusKategori = async (id) => {
   isLoading.value = true
   if (confirm('yakin mau hapus kategori ini?'))
     try {
-      await axios.delete(`/api/kategori/delete-kategori/${id}`, config)
+      await kategori_repository.destroy(id)
 
       router.go()
     } catch (error) {

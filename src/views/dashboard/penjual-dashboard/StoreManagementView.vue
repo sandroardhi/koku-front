@@ -1,12 +1,18 @@
 <script setup>
 import { onMounted, ref, reactive, watchEffect, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import Container from '../../../components/dashboard/Container.vue'
 import Modal from '../../../components/common/Modal.vue'
 import Table from '../../../components/common/Table.vue'
 import Alert from '../../../components/common/Alert.vue'
 import Excerpt from '../../../components/common/Excerpt.vue'
+import { useProdukRepository } from '@/composables/useProdukRepository'
+import { useKantinRepository } from '@/composables/useKantinRepository'
+import { useKategoriRepository } from '@/composables/useKategoriRepository'
+
+const kategori_repository = useKategoriRepository()
+const produk_repository = useProdukRepository()
+const kantin_repository = useKantinRepository()
 
 const route = useRoute()
 const router = useRouter()
@@ -16,18 +22,11 @@ const kantin = ref()
 const kantin_update_data = ref()
 const kantin_id = ref()
 
-const config = {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('access_token')}`
-  },
-  baseURL: 'http://localhost:8000'
-}
-
 // KANTIN
 // fetch kantin
 const fetchProfileKantin = async () => {
   isLoading.value = true
-  const { data } = await axios.get(`/api/kantin/profile/${user.id}`, config)
+  const { data } = await kantin_repository.show_profile_kantin(user.id)
   if (data.length == 0) {
     kantin.value = null
     isLoading.value = false
@@ -57,7 +56,7 @@ const onSubmitKantin = async () => {
   formdata.append('deskripsi', kantin_data.deskripsi)
   formdata.append('foto', kantin_data.foto)
   try {
-    await axios.post('api/kantin', formdata, config)
+    await kantin_repository.store(formdata)
 
     router.go()
   } catch (e) {
@@ -80,7 +79,7 @@ const onSubmitUpdateKantin = async () => {
   formdata.append('deskripsi', kantin_update_data.value[0].deskripsi)
   formdata.append('foto', kantin_update_data.value[0].foto)
   try {
-    await axios.post(`api/kantin/${kantin_id.value}`, formdata, config)
+    await kantin_repository.update(kantin_id.value, formdata)
 
     router.go()
   } catch (e) {
@@ -109,7 +108,7 @@ const fotoInputRef = ref(null) // iki gae clear input file image tok btw
 // fetch produk
 const fetchProduct = async () => {
   isLoading.value = true
-  const { data } = await axios.get(`/api/produk/${kantin_id.value}`, config)
+  const { data } = await produk_repository.show_produk(kantin_id.value)
   if (data.length == 0) {
     produk.value = null
     isLoading.value = false
@@ -171,8 +170,7 @@ const onSubmitProduk = async () => {
   try {
     console.log([...formdata.entries()])
 
-    await axios.post(`/api/produk/${kantin_id.value}`, formdata, config)
-
+    await produk_repository.store(formdata, kantin_id.value)
     // iki gae clear produk_array ne
     produk_array.splice(0, produk_array.length)
 
@@ -218,7 +216,7 @@ const onSubmitProdukUpdate = async () => {
   // }
 
   try {
-    await axios.post(`api/produk/${selectedItem.value.id}`, formdata, config)
+    await produk_repository.update(selectedItem.value.id, formdata)
 
     router.go()
   } catch (e) {
@@ -233,7 +231,7 @@ const onSubmitProdukUpdate = async () => {
 const hapusProduk = async (id) => {
   if (confirm('yakin mau hapus produkmu?'))
     try {
-      await axios.delete(`/api/produk/${id}`, config)
+      await produk_repository.destroy(id)
 
       router.go()
     } catch (error) {
@@ -249,7 +247,7 @@ const removeProduk = (index) => {
 const kategori = ref()
 const fetchKategori = async () => {
   isLoading.value = true
-  const { data } = await axios.get('/api/kategori/fetch-kategori', config)
+  const { data } = await kategori_repository.index()
   kategori.value = data
   isLoading.value = false
 }
@@ -281,7 +279,7 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
   return textCopy
 }
 const alertToggle = () => {
-  produk_data_alert.value = '' 
+  produk_data_alert.value = ''
 }
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -482,13 +480,13 @@ onMounted(async () => {
           <img
             v-if="kantin[0].foto == 'default.jpg'"
             src="images/default.jpg"
-            class="object-contain bg-[rgb(209,211,212)]  h-72 rounded-lg"
+            class="object-contain bg-[rgb(209,211,212)] h-72 rounded-lg"
             alt=""
           />
           <img
             v-else
             :src="`http://localhost:8000/storage/${kantin[0].foto}`"
-            class="object-cover bg-[rgb(209,211,212)]  h-72 rounded-lg"
+            class="object-cover bg-[rgb(209,211,212)] h-72 rounded-lg"
             alt=""
           />
 
@@ -496,11 +494,15 @@ onMounted(async () => {
           <div class="w-full flex flex-col">
             <div class="w-full min-h-[40%] p-4">
               <p class="text-xl">Nama</p>
-              <span class="text-3xl font-bold mt-5 break-all"><Excerpt :text="kantin[0].nama" :maxLength="30"/></span>
+              <span class="text-3xl font-bold mt-5 break-all"
+                ><Excerpt :text="kantin[0].nama" :maxLength="30"
+              /></span>
             </div>
             <div class="w-full min-h-[40%] p-4">
               <p class="text-xl">Deskripsi</p>
-              <span class="text-3xl font-bold mt-5 break-all"><Excerpt :text="kantin[0].deskripsi" :maxLength="50"/></span>
+              <span class="text-3xl font-bold mt-5 break-all"
+                ><Excerpt :text="kantin[0].deskripsi" :maxLength="50"
+              /></span>
             </div>
           </div>
         </div>
@@ -513,205 +515,211 @@ onMounted(async () => {
         <div class="w-full flex flex-col justify-center items-center mt-2">
           <p class="font-semibold text-lg mb-2">Kantinmu belum punya produk..</p>
           <Modal buttonText="Tambah produk" modalTitle="Tambah produk">
-          <template #modalBody>
-            <form
-              class="p-4 md:p-5"
-              enctype="multipart/form-data"
-              :action="route.path"
-              @submit.prevent="onSubmitProduk"
-            >
-              <div class="grid gap-4 mb-4 grid-cols-2">
-                <div class="col-span-2">
-                  <label
-                    for="nama"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Nama produkmu</label
-                  >
-                  <input
-                    type="text"
-                    v-model="produk_data.nama"
-                    autocomplete="off"
-                    id="nama"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder="Nasi goreng pedas gila"
-                  />
-                </div>
-                <div class="col-span-2">
-                  <label
-                    for="deskripsi"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Deskripsi produkmu</label
-                  >
-                  <textarea
-                    id="deskripsi"
-                    rows="4"
-                    v-model="produk_data.deskripsi"
-                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Nasi goreng jawa enak"
-                  ></textarea>
-                </div>
-                <div class="col-span-2">
-                  <label
-                    for="foto"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Foto produkmu</label
-                  >
-                  <input
-                    type="file"
-                    @change="onFileChangeProduk"
-                    ref="fotoInputRef"
-                    id="foto"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    placeholder=""
-                  />
-                </div>
-                <div class="col-span-2">
-                  <label
-                    for="kategori"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Kategori produkmu</label
-                  >
-                  <select
-                    id="kategori"
-                    name="kategori"
-                    v-model="produk_data.kategori_id"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  >
-                    <option disabled value="">Pilih kategori</option>
-                    <option v-for="kategori in kategori" :key="kategori.id" :value="kategori.id">
-                      {{ kategori.nama }}
-                    </option>
-                  </select>
-                </div>
-                <div class="col-span-2">
-                  <label
-                    for="stok"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Stok produkmu</label
-                  >
-                  <input
-                    id="stok"
-                    type="number"
-                    min="1"
-                    v-model="produk_data.stok"
-                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="10"
-                  />
-                  <Alert
-                    v-if="produk_data.stok !== null && produk_data.stok <= 0"
-                    type="danger"
-                    message="Stok tidak boleh negatif atau desimal."
-                  />
-                </div>
-                <div class="col-span-2">
-                  <label
-                    for="harga"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Harga produkmu</label
-                  >
-                  <input
-                    id="harga"
-                    type="number"
-                    step="1000"
-                    min="1"
-                    v-model="produk_data.harga"
-                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="10000"
-                  />
-                  <Alert
-                    v-if="produk_data.harga !== null && produk_data.harga <= 0"
-                    type="danger"
-                    message="Harga tidak boleh negatif atau desimal."
-                  />
-                </div>
-              </div>
-              <div class="col-span-2">
-                <Alert v-if="!produk_data_alert == ''" type="danger" :message="produk_data_alert" :alertToggle="() => alertToggle()" dismissable/>
-                <button
-                  type="button"
-                  @click="pushProduct"
-                  class="mt-2 text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
-                  <svg
-                    class="me-1 -ms-1 w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                  Tambah produk
-                </button>
-                <div v-if="!produk_array.length == 0" class="flex flex-col">
-                  <div v-for="(produk, index) in produk_array" :key="produk.id">
-                    <div
-                      id="alert-1"
-                      class="flex mt-4 items-center p-4 mb-4 text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400"
-                      role="alert"
+            <template #modalBody>
+              <form
+                class="p-4 md:p-5"
+                enctype="multipart/form-data"
+                :action="route.path"
+                @submit.prevent="onSubmitProduk"
+              >
+                <div class="grid gap-4 mb-4 grid-cols-2">
+                  <div class="col-span-2">
+                    <label
+                      for="nama"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >Nama produkmu</label
                     >
-                      <div class="ms-3 text-sm font-medium">
-                        <p>Nama: {{ excerpt(produk.nama, 30) }}</p>
-                        <p>Deskripsi: {{ excerpt(produk.deskripsi, 30) }}</p>
-                        <p>Kategori: {{ computedGetProdukKategori(produk.kategori_id) }}</p>
-                        <p>Harga: {{ formatter.format(produk.harga) }}</p>
-                        <p>Stok: {{ produk.stok }}</p>
-                        <p>Foto: {{ produk.foto ? produk.foto.name : 'No file selected' }}</p>
-                      </div>
-                      <button
-                        type="button"
-                        @click="removeProduk(index)"
-                        class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 p-1.5 hover:bg-blue-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700"
-                        data-dismiss-target="#alert-1"
-                        aria-label="Close"
+                    <input
+                      type="text"
+                      v-model="produk_data.nama"
+                      autocomplete="off"
+                      id="nama"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      placeholder="Nasi goreng pedas gila"
+                    />
+                  </div>
+                  <div class="col-span-2">
+                    <label
+                      for="deskripsi"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >Deskripsi produkmu</label
+                    >
+                    <textarea
+                      id="deskripsi"
+                      rows="4"
+                      v-model="produk_data.deskripsi"
+                      class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder="Nasi goreng jawa enak"
+                    ></textarea>
+                  </div>
+                  <div class="col-span-2">
+                    <label
+                      for="foto"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >Foto produkmu</label
+                    >
+                    <input
+                      type="file"
+                      @change="onFileChangeProduk"
+                      ref="fotoInputRef"
+                      id="foto"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      placeholder=""
+                    />
+                  </div>
+                  <div class="col-span-2">
+                    <label
+                      for="kategori"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >Kategori produkmu</label
+                    >
+                    <select
+                      id="kategori"
+                      name="kategori"
+                      v-model="produk_data.kategori_id"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                      <option disabled value="">Pilih kategori</option>
+                      <option v-for="kategori in kategori" :key="kategori.id" :value="kategori.id">
+                        {{ kategori.nama }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-span-2">
+                    <label
+                      for="stok"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >Stok produkmu</label
+                    >
+                    <input
+                      id="stok"
+                      type="number"
+                      min="1"
+                      v-model="produk_data.stok"
+                      class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder="10"
+                    />
+                    <Alert
+                      v-if="produk_data.stok !== null && produk_data.stok <= 0"
+                      type="danger"
+                      message="Stok tidak boleh negatif atau desimal."
+                    />
+                  </div>
+                  <div class="col-span-2">
+                    <label
+                      for="harga"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >Harga produkmu</label
+                    >
+                    <input
+                      id="harga"
+                      type="number"
+                      step="1000"
+                      min="1"
+                      v-model="produk_data.harga"
+                      class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder="10000"
+                    />
+                    <Alert
+                      v-if="produk_data.harga !== null && produk_data.harga <= 0"
+                      type="danger"
+                      message="Harga tidak boleh negatif atau desimal."
+                    />
+                  </div>
+                </div>
+                <div class="col-span-2">
+                  <Alert
+                    v-if="!produk_data_alert == ''"
+                    type="danger"
+                    :message="produk_data_alert"
+                    :alertToggle="() => alertToggle()"
+                    dismissable
+                  />
+                  <button
+                    type="button"
+                    @click="pushProduct"
+                    class="mt-2 text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    <svg
+                      class="me-1 -ms-1 w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    Tambah produk
+                  </button>
+                  <div v-if="!produk_array.length == 0" class="flex flex-col">
+                    <div v-for="(produk, index) in produk_array" :key="produk.id">
+                      <div
+                        id="alert-1"
+                        class="flex mt-4 items-center p-4 mb-4 text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400"
+                        role="alert"
                       >
-                        <span class="sr-only">Close</span>
+                        <div class="ms-3 text-sm font-medium">
+                          <p>Nama: {{ excerpt(produk.nama, 30) }}</p>
+                          <p>Deskripsi: {{ excerpt(produk.deskripsi, 30) }}</p>
+                          <p>Kategori: {{ computedGetProdukKategori(produk.kategori_id) }}</p>
+                          <p>Harga: {{ formatter.format(produk.harga) }}</p>
+                          <p>Stok: {{ produk.stok }}</p>
+                          <p>Foto: {{ produk.foto ? produk.foto.name : 'No file selected' }}</p>
+                        </div>
+                        <button
+                          type="button"
+                          @click="removeProduk(index)"
+                          class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 p-1.5 hover:bg-blue-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700"
+                          data-dismiss-target="#alert-1"
+                          aria-label="Close"
+                        >
+                          <span class="sr-only">Close</span>
+                          <svg
+                            class="w-3 h-3"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 14 14"
+                          >
+                            <path
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <button
+                        type="submit"
+                        class="text-white inline-flex items-center bg-[#FFB000] hover:bg-[#ffae00bd] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                      >
                         <svg
-                          class="w-3 h-3"
-                          aria-hidden="true"
+                          class="me-1 -ms-1 w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
                           xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 14 14"
                         >
                           <path
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                          />
+                            fill-rule="evenodd"
+                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                            clip-rule="evenodd"
+                          ></path>
                         </svg>
+                        Buat produk
                       </button>
                     </div>
                   </div>
-                  <div>
-                    <button
-                      type="submit"
-                      class="text-white inline-flex items-center bg-[#FFB000] hover:bg-[#ffae00bd] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >
-                      <svg
-                        class="me-1 -ms-1 w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                          clip-rule="evenodd"
-                        ></path>
-                      </svg>
-                      Buat produk
-                    </button>
-                  </div>
                 </div>
-              </div>
-            </form>
-          </template>
-        </Modal>
+              </form>
+            </template>
+          </Modal>
         </div>
       </div>
       <!-- end of belum ada produk -->
@@ -832,7 +840,13 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="col-span-2">
-                <Alert v-if="!produk_data_alert == ''" type="danger" :message="produk_data_alert" :alertToggle="() => alertToggle()" dismissable/>
+                <Alert
+                  v-if="!produk_data_alert == ''"
+                  type="danger"
+                  :message="produk_data_alert"
+                  :alertToggle="() => alertToggle()"
+                  dismissable
+                />
                 <button
                   type="button"
                   @click="pushProduct"

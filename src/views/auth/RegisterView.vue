@@ -1,7 +1,9 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
-import axios from 'axios'
+import { useAuthRepository } from '@/composables/useAuthRepository'
+
+const auth_repository = useAuthRepository()
 
 const route = useRoute()
 const router = useRouter()
@@ -13,16 +15,15 @@ const credentials = reactive({
   password_confirmation: '',
   tipe_user: 'user',
   status: 'active',
-  device_name: 'browser'
+  device_name: 'browser',
+  role_id: '1'
 })
 
 const isLoading = ref(false)
 const onSubmit = async () => {
   isLoading.value = true
   try {
-    await axios.post('api/auth/register', credentials, {
-      baseURL: 'http://localhost:8000'
-    })
+    await auth_repository.register(credentials)
 
     router.replace({ name: 'login' })
   } catch (e) {

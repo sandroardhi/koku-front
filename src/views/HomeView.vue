@@ -4,6 +4,9 @@ import { FwbCarousel } from 'flowbite-vue'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import Navbar from '../components/common/Navbar.vue'
+import { useKantinRepository } from '@/composables/useKantinRepository'
+
+const kantin_repository = useKantinRepository()
 
 const router = useRouter()
 const config = {
@@ -21,7 +24,7 @@ const pictures = [
 const kantins = ref([])
 
 const fetchKantin = async () => {
-  const { data } = await axios.get('api/kantin', config)
+  const { data } = await kantin_repository.index()
   kantins.value = data
 }
 const excerpt = (text, maxLength = 10, indicator = '...') => {

@@ -2,6 +2,9 @@
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import axios from 'axios'
+import { useAuthRepository } from '@/composables/useAuthRepository'
+
+const auth_repository = useAuthRepository()
 
 const route = useRoute()
 const router = useRouter()
@@ -29,7 +32,7 @@ const onSubmit = async () => {
   }
   await axios.get('/sanctum/csrf-cookie').then(async () => {
     try {
-      const { data } = await axios.post('api/auth/login', credentials)
+      const { data } = await auth_repository.login(credentials)
       if (data) {
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
