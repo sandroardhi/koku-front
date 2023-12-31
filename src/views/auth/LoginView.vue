@@ -2,9 +2,9 @@
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import axios from 'axios'
-import { useAuthRepository } from '@/composables/useAuthRepository'
+import { useAuthStore } from '../../stores/auth'
 
-const auth_repository = useAuthRepository()
+const authStore = useAuthStore()
 
 const route = useRoute()
 const router = useRouter()
@@ -15,7 +15,6 @@ const credentials = reactive({
   device_name: 'browser'
 })
 const isLoading = ref(false)
-
 
 const error = ref('')
 
@@ -30,33 +29,25 @@ const onSubmit = async () => {
   axios.defaults.headers = {
     'X-Requested-With': 'XMLHttpRequest'
   }
-  await axios.get('/sanctum/csrf-cookie').then(async () => {
-    try {
-      const { data } = await auth_repository.login(credentials)
-      if (data) {
-        localStorage.setItem('access_token', data.access_token)
-        localStorage.setItem('user', JSON.stringify(data.user))
+  await axios.get('/sanctum/csrf-cookie')
+  try {
+    await authStore.login(credentials)
+    router.replace({ name: 'home' })
+  } catch (e) {
+    if (e.response && e.response.status === 422) {
+      const validationErrors = e.response.data.errors
 
-        router.replace({ name: 'home' })
-      }
-    } catch (e) {
-      // console.error(e)
-      // Check validation error
-      if (e.response && e.response.status === 422) {
-        const validationErrors = e.response.data.errors
-
-        if (validationErrors && validationErrors.email) {
-          error.value = validationErrors.email[0]
-        }
+      if (validationErrors && validationErrors.email) {
+        error.value = validationErrors.email[0]
       }
     }
-    isLoading.value = false
-  })
+  }
+  isLoading.value = false
 }
 </script>
 
 <template>
-  <main class="grid grid-cols-12 gap-4">
+  <main class="grid grid-cols-12 gap-4" v-auto-animate>
     <section class="col-span-6 bg-white min-h-screen shadow-lg">
       <form
         :action="route.path"
@@ -88,6 +79,7 @@ const onSubmit = async () => {
           class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
           role="alert"
           v-if="error"
+          @click="clearError"
         >
           <span class="block sm:inline font-bold">{{ error }}</span>
           <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
@@ -99,7 +91,6 @@ const onSubmit = async () => {
             >
               <title>Close</title>
               <path
-                @click="clearError"
                 d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"
               />
             </svg>
@@ -109,13 +100,14 @@ const onSubmit = async () => {
           type="submit"
           class="border p-3 text-white active:bg-blue-600 hover:bg-blue-500 w-full rounded bg-blue-400 transition-colors"
         >
-          Masuk
+          <p v-if="isLoading">Loading...</p>
+          <p v-else>Masuk</p>
         </button>
         <!-- <p class="text-center mt-5 font-semibold">Create An Account ? <router-link class="text-blue-600 hover:text-blue-700 hover:text-xl duration-300" to="/register" >Register</router-link></p> -->
         <p class="text-center mt-5 font-semibold">
           Belum punya akun?
           <router-link
-            class="text-blue-600 hover:text-blue-700 hover:text-xl duration-300"
+            class="text-blue-600 hover:text-blue-700 duration-300"
             to="/register"
             >Register</router-link
           >

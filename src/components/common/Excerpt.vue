@@ -1,9 +1,10 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  text: {
-    type: String,
+  parentText: {
+    type: [String, Number],
     default: ''
   },
   maxLength: {
@@ -12,19 +13,22 @@ const props = defineProps({
   }
 })
 
-const showFullText = computed(() => props.text.length <= props.maxLength)
+const showFullText = computed(() => {
+  const text = props.parentText || '' // Use an empty string if props.parentText is null
+  return text.length <= props.maxLength
+})
 const showBox = ref(false)
 
 const excerptText = computed(() => {
-  return props.text.length > props.maxLength
-    ? `${props.text.substring(0, props.maxLength)}...`
-    : props.text
+  return props.parentText.length > props.maxLength
+    ? `${props.parentText.substring(0, props.maxLength)}...`
+    : props.parentText
 })
 </script>
 <template>
   <div class="relative">
     <template v-if="showFullText">
-      {{ text }}
+      {{ parentText }}
     </template>
     <template v-else>
       <span @click="showBox = true" class="cursor-pointer">{{ excerptText }}</span>
@@ -33,7 +37,7 @@ const excerptText = computed(() => {
         class="absolute -top-20 left-10 w-[300px] bg-white border border-gray-300 p-2 z-10"
       >
         <div class="w-full p-4 break-all">
-          <div class="break-all">{{ text }}</div>
+          <div class="break-all">{{ parentText }}</div>
         </div>
         <svg
           viewBox="0 0 24 24"

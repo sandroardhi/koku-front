@@ -6,3 +6,4 @@ export * from "./useAdminRepository";
 export * from "./useKantinRepository";
 export * from "./useKategoriRepository";
 export * from "./useProdukRepository";
+export * from "./useRoleRepository";

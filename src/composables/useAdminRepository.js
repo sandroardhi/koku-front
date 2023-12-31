@@ -7,11 +7,8 @@ export const useAdminRepository = () => {
 
   const update_role = (id, data) => http.put(`/api/admin/user/${id}/update-role`, data)
 
-  const roles = () => http.get('/api/admin/roles')
-
   return {
     users,
-    roles,
     update_role
   }
 }

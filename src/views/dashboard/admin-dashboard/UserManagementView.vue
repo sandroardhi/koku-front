@@ -5,6 +5,9 @@ import Container from '../../../components/dashboard/Container.vue'
 import Modal from '../../../components/common/Modal.vue'
 import Table from '../../../components/common/Table.vue'
 import { useAdminRepository } from '@/composables/useAdminRepository'
+import { useRoleRepository } from '@/composables/useRoleRepository'
+
+const role_repository = useRoleRepository()
 
 const admin_repository = useAdminRepository()
 
@@ -13,9 +16,9 @@ const router = useRouter()
 const users = ref([])
 const roles = ref([])
 const selectedItem = ref({})
+const selectedRoleId = ref({})
 const isLoading = ref(false)
 const status = ['active', 'pending', 'suspended']
-
 
 const fetchAllUser = async () => {
   isLoading.value = true
@@ -26,7 +29,7 @@ const fetchAllUser = async () => {
 
 const fetchAllRoles = async () => {
   isLoading.value = true
-  const { data } = await admin_repository.roles()
+  const { data } = await role_repository.index()
   roles.value = data
   isLoading.value = false
 }
@@ -35,19 +38,21 @@ const toggleModal = (item) => {
   selectedItem.value = {} // Clear previous value
 
   selectedItem.value = { ...item }
+  selectedRoleId.value = item.role_id
 }
 
 const onUpdateUser = async () => {
   isLoading.value = true
-  const { role_id, status } = selectedItem.value
-  
+  const { status } = selectedItem.value
+  const role_id = selectedRoleId.value
+
   const data = {
-    role_id,
-    status
+    status,
+    role_id
   }
   try {
     await admin_repository.update_role(selectedItem.value.id, data)
-    
+
     router.go()
   } catch (e) {
     console.error(e)
@@ -55,15 +60,16 @@ const onUpdateUser = async () => {
   isLoading.value = false
 }
 const labels = [
-  { text: 'Nama', field: 'name' },
-  { text: 'Email', field: 'email' },
-  { text: 'Role', field: 'role' },
-  { text: 'Status', field: 'status' }
+  { id: 1, text: 'Nama', field: 'name' },
+  { id: 2, text: 'Email', field: 'email' },
+  { id: 3, text: 'Role', field: 'role' },
+  { id: 4, text: 'Status', field: 'status' }
 ]
 
-onMounted(() => {
-  fetchAllUser()
-  fetchAllRoles()
+onMounted(async () => {
+  await fetchAllUser()
+  await fetchAllRoles()
+  console.log(roles.value)
 })
 </script>
 
@@ -73,10 +79,9 @@ onMounted(() => {
       <div class="w-full bg-white shadow-xl rounded-lg p-5 min-h-[100px]">
         <Table
           :labels="labels"
-          :roles="roles"
           :data="users"
           :excerptLength="20"
-          :actionButtons="[{ text: '', type: 'hidden' }]"
+          :actionButtons="[{ id: 1, text: '', type: 'hidden' }]"
         >
           <template #customButton="{ item }">
             <Modal buttonText="Edit" modalTitle="Edit User" :toggleModal="() => toggleModal(item)">
@@ -97,12 +102,12 @@ onMounted(() => {
                       <select
                         id="role"
                         name="role"
-                        v-model="selectedItem.role_id"
+                        v-model="selectedRoleId"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       >
                         <option disabled value="">Choose a role</option>
                         <option v-for="role in roles" :key="role.id" :value="role.id">
-                          {{ role.role }}
+                          {{ role.name }}
                         </option>
                       </select>
                     </div>

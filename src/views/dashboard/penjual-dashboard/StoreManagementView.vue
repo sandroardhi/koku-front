@@ -60,7 +60,7 @@ const onSubmitKantin = async () => {
 
     router.go()
   } catch (e) {
-    console.error(e)
+    console.error(e.response.data)
   }
   isLoading.value = false
 }
@@ -253,12 +253,12 @@ const fetchKategori = async () => {
 }
 
 const labels = [
-  { text: 'Foto', field: 'foto' },
-  { text: 'Nama', field: 'nama' },
-  { text: 'Deskripsi', field: 'deskripsi' },
-  { text: 'Kategori', field: 'kategori' },
-  { text: 'Harga', field: 'harga' },
-  { text: 'Stok', field: 'stok' }
+  { id: 1, text: 'Foto', field: 'foto' },
+  { id: 2, text: 'Nama', field: 'nama' },
+  { id: 3, text: 'Deskripsi', field: 'deskripsi' },
+  { id: 4, text: 'Kategori', field: 'kategori' },
+  { id: 5, text: 'Harga', field: 'harga' },
+  { id: 6, text: 'Stok', field: 'stok' }
 ]
 
 const getProdukKategori = (kategoriArray, kategori_id) => {
@@ -370,7 +370,8 @@ onMounted(async () => {
                     clip-rule="evenodd"
                   ></path>
                 </svg>
-                Tambah kantinmu
+                <p v-if="isLoading">Loading...</p>
+                <p v-else>Tambah kantinmu</p>
               </button>
             </form>
           </template>
@@ -468,7 +469,8 @@ onMounted(async () => {
                       clip-rule="evenodd"
                     ></path>
                   </svg>
-                  Edit kantinmu
+                  <p v-if="isLoading">Loading...</p>
+                  <p v-else>Edit kantinmu</p>
                 </button>
               </form>
             </template>
@@ -495,13 +497,13 @@ onMounted(async () => {
             <div class="w-full min-h-[40%] p-4">
               <p class="text-xl">Nama</p>
               <span class="text-3xl font-bold mt-5 break-all"
-                ><Excerpt :text="kantin[0].nama" :maxLength="30"
+                ><Excerpt :parentText="kantin[0].nama" :maxLength="30"
               /></span>
             </div>
             <div class="w-full min-h-[40%] p-4">
               <p class="text-xl">Deskripsi</p>
               <span class="text-3xl font-bold mt-5 break-all"
-                ><Excerpt :text="kantin[0].deskripsi" :maxLength="50"
+                ><Excerpt :parentText="kantin[0].deskripsi" :maxLength="50"
               /></span>
             </div>
           </div>
@@ -712,7 +714,8 @@ onMounted(async () => {
                             clip-rule="evenodd"
                           ></path>
                         </svg>
-                        Buat produk
+                        <p v-if="isLoading">Loading...</p>
+                        <p v-else>Buat produk</p>
                       </button>
                     </div>
                   </div>
@@ -924,7 +927,8 @@ onMounted(async () => {
                           clip-rule="evenodd"
                         ></path>
                       </svg>
-                      Buat produk
+                      <p v-if="isLoading">Loading...</p>
+                      <p v-else>Buat produk</p>
                     </button>
                   </div>
                 </div>
@@ -936,7 +940,7 @@ onMounted(async () => {
           :labels="labels"
           :data="produk"
           :kategori="kategori"
-          :actionButtons="[{ text: 'Hapus', type: 'red', handleClick: hapusProduk }]"
+          :actionButtons="[{ id: 1, text: 'Hapus', type: 'red', handleClick: hapusProduk }]"
         >
           <!-- edit produk modal -->
           <template #customButton="{ item }">
@@ -1086,7 +1090,8 @@ onMounted(async () => {
                           clip-rule="evenodd"
                         ></path>
                       </svg>
-                      Edit produk
+                      <p v-if="isLoading">Loading...</p>
+                      <p v-else>Edit produk</p>
                     </button>
                   </div>
                 </form>

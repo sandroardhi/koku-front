@@ -1,6 +1,9 @@
 <script setup>
 import { RouterLink, useRouter, useRoute, RouterView } from 'vue-router'
 import SidebarList from '../../components/dashboard/SidebarList.vue'
+import { useAuthStore } from '../../stores/auth'
+
+const authStore = useAuthStore()
 
 const route = useRoute()
 </script>
@@ -33,11 +36,38 @@ const route = useRoute()
       <div class="w-full h-[2px] border"></div>
 
       <ul class="w-full min-h-screen p-3">
+        <!-- to store-management -->
+        <SidebarList
+          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'penjual'"
+          :to="{ name: 'store-management' }"
+          spanText="Toko"
+          currentRoute="/dashboard"
+        >
+          <template #svg>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-8">
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+              <g id="SVGRepo_iconCarrier">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M4.87617 3.75H19.1238L21 8.86683V10.5C21 11.2516 20.7177 11.9465 20.25 12.4667V21H3.75V12.4667C3.28234 11.9465 3 11.2516 3 10.5V8.86683L4.87617 3.75ZM18.1875 13.3929C18.3807 13.3929 18.5688 13.3731 18.75 13.3355V19.5H15V15H9L9 19.5H5.25V13.3355C5.43122 13.3731 5.61926 13.3929 5.8125 13.3929C6.63629 13.3929 7.36559 13.0334 7.875 12.4667C8.38441 13.0334 9.11371 13.3929 9.9375 13.3929C10.7613 13.3929 11.4906 13.0334 12 12.4667C12.5094 13.0334 13.2387 13.3929 14.0625 13.3929C14.8863 13.3929 15.6156 13.0334 16.125 12.4667C16.6344 13.0334 17.3637 13.3929 18.1875 13.3929ZM10.5 19.5H13.5V16.5H10.5L10.5 19.5ZM19.5 9.75V10.5C19.5 11.2965 18.8856 11.8929 18.1875 11.8929C17.4894 11.8929 16.875 11.2965 16.875 10.5V9.75H19.5ZM19.1762 8.25L18.0762 5.25H5.92383L4.82383 8.25H19.1762ZM4.5 9.75V10.5C4.5 11.2965 5.11439 11.8929 5.8125 11.8929C6.51061 11.8929 7.125 11.2965 7.125 10.5V9.75H4.5ZM8.625 9.75V10.5C8.625 11.2965 9.23939 11.8929 9.9375 11.8929C10.6356 11.8929 11.25 11.2965 11.25 10.5V9.75H8.625ZM12.75 9.75V10.5C12.75 11.2965 13.3644 11.8929 14.0625 11.8929C14.7606 11.8929 15.375 11.2965 15.375 10.5V9.75H12.75Z"
+                  fill="#9CA3AF"
+                  class="group-hover:fill-black"
+                  :class="route.path === '/dashboard' ? 'fill-black' : ''"
+                ></path>
+              </g>
+            </svg>
+          </template>
+        </SidebarList>
+        <!-- end of to store-management -->
+
         <!-- to user-management -->
         <SidebarList
+          v-if="authStore.getUserRole == 'admin'"
           :to="{ name: 'user-management' }"
           spanText="User Management"
-          currentRoute="/dashboard"
+          currentRoute="/dashboard/user-management"
         >
           <template #svg>
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-8">
@@ -51,7 +81,7 @@ const route = useRoute()
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   class="transition-all duration-150 group-hover:stroke-black"
-                  :class="route.path === '/dashboard' ? 'stroke-black' : ''"
+                  :class="route.path === '/dashboard/user-management' ? 'stroke-black' : ''"
                 ></path>
                 <path
                   d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z"
@@ -60,7 +90,7 @@ const route = useRoute()
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   class="transition-all duration-150 group-hover:stroke-black"
-                  :class="route.path === '/dashboard' ? 'stroke-black' : ''"
+                  :class="route.path === '/dashboard/user-management' ? 'stroke-black' : ''"
                 ></path>
               </g>
             </svg>
@@ -70,9 +100,10 @@ const route = useRoute()
 
         <!-- to kategori-management -->
         <SidebarList
+          v-if="authStore.getUserRole == 'admin'"
           :to="{ name: 'kategori-management' }"
           spanText="Kategori Management"
-          currentRoute="/kategori-management"
+          currentRoute="/dashboard/kategori-management"
         >
           <template #svg>
             <svg
@@ -80,7 +111,7 @@ const route = useRoute()
               xmlns="http://www.w3.org/2000/svg"
               fill="#9CA3AF"
               class="w-8 group-hover:fill-black"
-              :class="route.path === '/kategori-management' ? 'fill-black' : ''"
+              :class="route.path === '/dashboard/kategori-management' ? 'fill-black' : ''"
             >
               <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
               <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -115,30 +146,37 @@ const route = useRoute()
         </SidebarList>
         <!-- end of to kategori-management -->
 
-        <!-- to store-management -->
+        <!-- to role-management -->
         <SidebarList
-          :to="{ name: 'store-management' }"
-          spanText="Toko"
-          currentRoute="/store-management"
+          v-if="authStore.getUserRole == 'admin'"
+          :to="{ name: 'role-management' }"
+          spanText="Role Management"
+          currentRoute="/dashboard/role-management"
         >
           <template #svg>
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-8">
+            <svg
+              fill="#9CA3AF"
+              viewBox="0 0 52 52"
+              data-name="Layer 1"
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-8 group-hover:fill-black"
+              :class="route.path === '/dashboard/role-management' ? 'fill-black' : ''"
+            >
               <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
               <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
               <g id="SVGRepo_iconCarrier">
                 <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M4.87617 3.75H19.1238L21 8.86683V10.5C21 11.2516 20.7177 11.9465 20.25 12.4667V21H3.75V12.4667C3.28234 11.9465 3 11.2516 3 10.5V8.86683L4.87617 3.75ZM18.1875 13.3929C18.3807 13.3929 18.5688 13.3731 18.75 13.3355V19.5H15V15H9L9 19.5H5.25V13.3355C5.43122 13.3731 5.61926 13.3929 5.8125 13.3929C6.63629 13.3929 7.36559 13.0334 7.875 12.4667C8.38441 13.0334 9.11371 13.3929 9.9375 13.3929C10.7613 13.3929 11.4906 13.0334 12 12.4667C12.5094 13.0334 13.2387 13.3929 14.0625 13.3929C14.8863 13.3929 15.6156 13.0334 16.125 12.4667C16.6344 13.0334 17.3637 13.3929 18.1875 13.3929ZM10.5 19.5H13.5V16.5H10.5L10.5 19.5ZM19.5 9.75V10.5C19.5 11.2965 18.8856 11.8929 18.1875 11.8929C17.4894 11.8929 16.875 11.2965 16.875 10.5V9.75H19.5ZM19.1762 8.25L18.0762 5.25H5.92383L4.82383 8.25H19.1762ZM4.5 9.75V10.5C4.5 11.2965 5.11439 11.8929 5.8125 11.8929C6.51061 11.8929 7.125 11.2965 7.125 10.5V9.75H4.5ZM8.625 9.75V10.5C8.625 11.2965 9.23939 11.8929 9.9375 11.8929C10.6356 11.8929 11.25 11.2965 11.25 10.5V9.75H8.625ZM12.75 9.75V10.5C12.75 11.2965 13.3644 11.8929 14.0625 11.8929C14.7606 11.8929 15.375 11.2965 15.375 10.5V9.75H12.75Z"
-                  fill="#9CA3AF"
-                  class="group-hover:fill-black"
-                  :class="route.path === '/store-management' ? 'fill-black' : ''"
+                  d="M38.3,27.2A11.4,11.4,0,1,0,49.7,38.6,11.46,11.46,0,0,0,38.3,27.2Zm2,12.4a2.39,2.39,0,0,1-.9-.2l-4.3,4.3a1.39,1.39,0,0,1-.9.4,1,1,0,0,1-.9-.4,1.39,1.39,0,0,1,0-1.9l4.3-4.3a2.92,2.92,0,0,1-.2-.9,3.47,3.47,0,0,1,3.4-3.8,2.39,2.39,0,0,1,.9.2c.2,0,.2.2.1.3l-2,1.9a.28.28,0,0,0,0,.5L41.1,37a.38.38,0,0,0,.6,0l1.9-1.9c.1-.1.4-.1.4.1a3.71,3.71,0,0,1,.2.9A3.57,3.57,0,0,1,40.3,39.6Z"
+                ></path>
+                <circle cx="21.7" cy="14.9" r="12.9"></circle>
+                <path
+                  d="M25.2,49.8c2.2,0,1-1.5,1-1.5h0a15.44,15.44,0,0,1-3.4-9.7,15,15,0,0,1,1.4-6.4.77.77,0,0,1,.2-.3c.7-1.4-.7-1.5-.7-1.5h0a12.1,12.1,0,0,0-1.9-.1A19.69,19.69,0,0,0,2.4,47.1c0,1,.3,2.8,3.4,2.8H24.9C25.1,49.8,25.1,49.8,25.2,49.8Z"
                 ></path>
               </g>
             </svg>
           </template>
         </SidebarList>
-        <!-- end of to store-management -->
+        <!-- end of to role-management -->
       </ul>
     </aside>
 

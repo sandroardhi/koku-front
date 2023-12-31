@@ -107,7 +107,6 @@ onMounted(() => {
   <Container title="Kategori Management">
     <div class="w-full px-10 py-5 min-h-[200px]">
       <div class="w-full bg-white shadow-xl rounded-lg p-5">
-        <!-- kantin detail head -->
         <div class="w-full flex flex-col justify-between">
           <p class="text-xl font-semibold ">Buat Kategori</p>
           <form

@@ -2,12 +2,7 @@
 // useHttp ini buat config axios nya, buat kita pake 
 import axios from "axios";
 
-// Initialize headers if not defined
-if (!axios.defaults.headers) {
-  axios.defaults.headers = {};
-}
 
-axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('access_token')}`;
 
 export const useHttp = () => {
   const client = axios.create({
@@ -16,6 +11,19 @@ export const useHttp = () => {
       "X-Requested-With": "XMLHttpRequest",
     },
   });
+
+  client.interceptors.request.use(
+    (config) => {
+      const accessToken = localStorage.getItem('access_token');
+      if (accessToken) {
+        config.headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
 
   const get = (url, params) => client.get(url, { params });
   const post = (url, data, params) => client.post(url, data, { params });

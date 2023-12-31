@@ -1,9 +1,10 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
-import { useAuthRepository } from '@/composables/useAuthRepository'
+import { useAuthStore } from '../../stores/auth'
 
-const auth_repository = useAuthRepository()
+const authStore = useAuthStore()
+
 
 const route = useRoute()
 const router = useRouter()
@@ -23,9 +24,9 @@ const isLoading = ref(false)
 const onSubmit = async () => {
   isLoading.value = true
   try {
-    await auth_repository.register(credentials)
+    await authStore.register(credentials)
 
-    router.replace({ name: 'login' })
+    router.push({ name: 'login' })
   } catch (e) {
     console.error(e)
   }
@@ -86,12 +87,13 @@ const onSubmit = async () => {
           type="submit"
           class="border p-3 text-white active:bg-blue-600 hover:bg-blue-500 w-full rounded bg-blue-400 transition-colors"
         >
-          Daftar
+          <p v-if="isLoading">Loading...</p>
+          <p v-else>Daftar</p>
         </button>
         <p class="text-center mt-5 font-semibold">
           Udah punya akun?
           <router-link
-            class="text-blue-600 hover:text-blue-700 hover:text-xl duration-300"
+            class="text-blue-600 hover:text-blue-700 duration-300"
             to="/login"
             >Login</router-link
           >
