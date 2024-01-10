@@ -4,6 +4,8 @@ export const useKantinRepository = () => {
     const http = useHttp();
 
     const index = () => http.get('/api/kantin');
+
+    const show = (id) => http.get(`/api/kantin/${id}`);
     
     const store = (data) => http.post('/api/kantin', data);
     
@@ -15,6 +17,7 @@ export const useKantinRepository = () => {
 
     return {
         index,
+        show,
         store, 
         update,
         destroy,

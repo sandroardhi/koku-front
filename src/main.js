@@ -6,6 +6,7 @@ import router from './router'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth';
+import { useKeranjangStore } from '@/stores/keranjang';
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -15,5 +16,7 @@ app.use(router)
 
 const authStore = useAuthStore();
 authStore.checkAuthenticationOnReload();
+const keranjangStore = useKeranjangStore();
+keranjangStore.checkKeranjangOnReload();
 
 app.use(autoAnimatePlugin).mount('#app')

@@ -10,6 +10,36 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
+      path: '/kantin',
+      name: 'kantin',
+      component: () => import('../views/KantinListView.vue')
+    },
+    {
+      path: '/kantin/show/:id',
+      name: 'kantin-show',
+      component: () => import('../views/KantinDetailView.vue')
+    },
+    {
+      path: '/kategori',
+      name: 'kategori',
+      component: () => import('../views/KategoriView.vue')
+    },
+    {
+      path: '/keranjang',
+      name: 'keranjang',
+      component: () => import('../views/KeranjangView.vue')
+    },
+    {
+      path: '/kategori',
+      name: 'kategori',
+      component: () => import('../views/KategoriView.vue')
+    },
+    {
+      path: '/kategori/:id',
+      name: 'kategori-detail',
+      component: () => import('../views/KategoriDetailView.vue')
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/auth/LoginView.vue'),
@@ -38,7 +68,7 @@ const router = createRouter({
       name: 'dashboard',
       component: () => import('../views/dashboard/DashboardView.vue'),
       meta: {
-        requireAuth: true,
+        requireAuth: true
       },
       children: [
         {
@@ -46,33 +76,33 @@ const router = createRouter({
           name: 'store-management',
           component: () => import('../views/dashboard/penjual-dashboard/StoreManagementView.vue'),
           meta: {
-            requirePenjual: true,
-          },
+            requirePenjual: true
+          }
         },
         {
           path: 'user-management',
           name: 'user-management',
           component: () => import('../views/dashboard/admin-dashboard/UserManagementView.vue'),
           meta: {
-            requireAdmin: true,
-          },
+            requireAdmin: true
+          }
         },
         {
           path: 'kategori-management',
           name: 'kategori-management',
           component: () => import('../views/dashboard/admin-dashboard/KategoriManagementView.vue'),
           meta: {
-            requireAdmin: true,
-          },
+            requireAdmin: true
+          }
         },
         {
           path: 'role-management',
           name: 'role-management',
           component: () => import('../views/dashboard/admin-dashboard/RoleManagementView.vue'),
           meta: {
-            requireAdmin: true,
-          },
-        },
+            requireAdmin: true
+          }
+        }
       ]
     }
   ]
@@ -87,10 +117,14 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.requireAdmin && authStore.getUserRole !== 'admin') {
     // Redirect to unauthorized page if the user is not an admin
     next('/unauthorized')
-  } else if (to.meta.requirePenjual && authStore.getUserRole !== 'penjual' && authStore.getUserRole !== 'admin') {
+  } else if (
+    to.meta.requirePenjual &&
+    authStore.getUserRole !== 'penjual' &&
+    authStore.getUserRole !== 'admin'
+  ) {
     // Redirect to unauthorized page if the user is not a penjual or admin
     next('/unauthorized')
-  }else {
+  } else {
     // Continue to the route
     next()
   }

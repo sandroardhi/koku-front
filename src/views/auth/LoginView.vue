@@ -47,7 +47,7 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <main class="grid grid-cols-12 gap-4" v-auto-animate>
+  <main class="grid grid-cols-12 gap-4">
     <section class="col-span-6 bg-white min-h-screen shadow-lg">
       <form
         :action="route.path"

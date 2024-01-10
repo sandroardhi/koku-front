@@ -1,9 +1,12 @@
 <script setup>
 import { FwbCarousel } from 'flowbite-vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
 import Navbar from '../components/common/Navbar.vue'
 import { useKantinRepository } from '@/composables/useKantinRepository'
 import { useAuthStore } from '@/stores/auth'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const authStore = useAuthStore()
 const kantin_repository = useKantinRepository()
@@ -19,18 +22,28 @@ const isLoading = ref(false)
 
 const fetchKantin = async () => {
   isLoading.value = true
-  try{
+  try {
     const { data } = await kantin_repository.index()
     kantins.value = data
   } catch (e) {
     console.log(e)
-  } finally{
+  } finally {
     isLoading.value = false
   }
 }
+
+const randomKantins = ref([])
+
+// Watch for changes in kantins and update randomKantins accordingly
+watchEffect(() => {
+  const shuffledKantins = [...kantins.value]
+  shuffledKantins.sort(() => Math.random() - 0.5)
+  randomKantins.value = shuffledKantins.slice(0, 4)
+})
+
 const excerpt = (text, maxLength = 10, indicator = '...') => {
   let textCopy = text
-  
+
   if (textCopy.length > maxLength) {
     textCopy = textCopy.substring(0, maxLength) + indicator
   }
@@ -39,15 +52,13 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
 
 onMounted(async () => {
   await fetchKantin()
-  console.log(authStore.isAuthenticated)
-  console.log(authStore.getUserRole)
 })
 </script>
 
 <template>
   <Navbar />
-  <div class="w-[80%] mx-auto p-4 mb-10" >
-    <!-- <fwb-carousel slide :slide-interval="4000" class="z-0" :pictures="pictures"/> -->
+  <div class="w-[80%] mx-auto p-4 mb-10">
+    <fwb-carousel slide :slide-interval="4000" class="z-0" :pictures="pictures" />
     <div class="p-1">
       <p class="text-6xl mb-2">Lorem ipsum dolor sit amet.</p>
       <p class="text-3xl">Today's pick</p>
@@ -74,9 +85,9 @@ onMounted(async () => {
       <span class="sr-only">Loading...</span>
     </div>
     <div class="grid grid-cols-4 gap-4 mb-3" v-else>
-      <div v-for="kantin in kantins" :key="kantin.id" class="col-span-2">
+      <div v-for="kantin in randomKantins" :key="kantin.id" class="col-span-2">
         <router-link
-          to="#"
+          :to="`/kantin/show/${kantin.id}`"
           class="flex flex-col items-center bg-white border max-h-[150px] border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           <img
@@ -101,6 +112,12 @@ onMounted(async () => {
           </div>
         </router-link>
       </div>
+      <router-link
+        to="/kantin"
+        class="hover:bg-[#FFB000] hover:text-white rounded-lg col-span-4 text-center p-3 text-xl transition-all duration-150 ease-in"
+      >
+        <p>Lihat semua kantin</p>
+      </router-link>
     </div>
   </div>
 </template>

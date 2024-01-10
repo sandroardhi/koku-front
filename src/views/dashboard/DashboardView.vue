@@ -1,5 +1,5 @@
 <script setup>
-import { RouterLink, useRouter, useRoute, RouterView } from 'vue-router'
+import { RouterLink, useRoute, RouterView } from 'vue-router'
 import SidebarList from '../../components/dashboard/SidebarList.vue'
 import { useAuthStore } from '../../stores/auth'
 

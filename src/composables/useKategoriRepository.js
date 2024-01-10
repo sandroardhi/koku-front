@@ -4,7 +4,9 @@ export const useKategoriRepository = () => {
     const http = useHttp();
 
     const index = () => http.get('/api/kategori/fetch-kategori');
-
+    
+    const show = (id) => http.get(`/api/kategori/fetch-kategori-detail/${id}`);
+    
     const store = (data) => http.post('/api/kategori/store-kategori', data);
 
     const update =  (id, data) => http.post(`/api/kategori/update-kategori/${id}`, data);
@@ -13,6 +15,7 @@ export const useKategoriRepository = () => {
 
     return {
         index,
+        show,
         store, 
         update,
         destroy

@@ -2,6 +2,7 @@
 import { RouterLink } from 'vue-router'
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import Navbar from '../components/common/Navbar.vue'
 
 const authStore = useAuthStore()
 
@@ -11,6 +12,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <Navbar/>
   <div class="w-full h-[calc(100vh-7rem)] flex justify-center items-center flex-col">
     <div class="w-full h-full flex flex-col justify-around items-center">
       <div class="w-full text-center">
