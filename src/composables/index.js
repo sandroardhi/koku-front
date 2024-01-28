@@ -7,3 +7,4 @@ export * from "./useKantinRepository";
 export * from "./useKategoriRepository";
 export * from "./useProdukRepository";
 export * from "./useRoleRepository";
+export * from "./useOrderRepository";

@@ -1,14 +1,14 @@
 <script setup>
-import { FwbCarousel } from 'flowbite-vue'
 import { ref, onMounted, watchEffect } from 'vue'
 import Navbar from '../components/common/Navbar.vue'
 import { useKantinRepository } from '@/composables/useKantinRepository'
-import { useAuthStore } from '@/stores/auth'
-import { RouterLink, useRouter, useRoute } from 'vue-router'
+import { RouterLink } from 'vue-router'
+import { useKeranjangStore } from '@/stores/keranjang'
+import { VueperSlides, VueperSlide } from 'vueperslides'
+import 'vueperslides/dist/vueperslides.css'
 
-const route = useRoute()
-
-const authStore = useAuthStore()
+const keranjangStore = useKeranjangStore()
+const user = JSON.parse(localStorage.getItem('user'))
 const kantin_repository = useKantinRepository()
 
 const pictures = [
@@ -51,18 +51,37 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
 }
 
 onMounted(async () => {
-  await fetchKantin()
+  if(user){
+    await keranjangStore.getCartData()
+  }
+  fetchKantin()
 })
 </script>
 
 <template>
   <Navbar />
-  <div class="w-[80%] mx-auto p-4 mb-10">
-    <fwb-carousel slide :slide-interval="4000" class="z-0" :pictures="pictures" />
-    <div class="p-1">
-      <p class="text-6xl mb-2">Lorem ipsum dolor sit amet.</p>
-      <p class="text-3xl">Today's pick</p>
-      <p class="text-3xl" v-if="authStore.isAuthenticated">popol</p>
+  <div class="w-[80%] mx-auto">
+    <vueper-slides
+      class="no-shadow"
+      arrows-outside
+      bullets-outside
+      transition-speed="500"
+      :pause-on-hover="true"
+      autoplay
+      lazy
+      lazy-load-on-drag
+    >
+      <vueper-slide v-for="(picture, i) in pictures" :key="i" :image="picture.src">
+        <template #loader>
+          <span>Loading...</span>
+        </template>
+      </vueper-slide>
+    </vueper-slides>
+  </div>
+  <div class="w-[80%] mx-auto p-4 mb-10 -mt-8">
+    <div class="p-1 mb-3">
+      <p class="text-3xl md:text-5xl mb-2 font-bold" v-if="user">Halo, {{ user.name }}<span class="wave">👋</span>.</p>
+      <p class="text-xl md:text-2xl mb-2 font-[550]">Mau jajan apa hari ini?</p>
     </div>
 
     <div role="status" v-if="isLoading" class="mx-auto w-full flex justify-center items-center">
@@ -84,26 +103,28 @@ onMounted(async () => {
       </svg>
       <span class="sr-only">Loading...</span>
     </div>
-    <div class="grid grid-cols-4 gap-4 mb-3" v-else>
-      <div v-for="kantin in randomKantins" :key="kantin.id" class="col-span-2">
+    <div class="grid grid-cols-4 gap-4 mb-10" v-else>
+      <div v-for="kantin in randomKantins" :key="kantin.id" class="col-span-4 md:col-span-2">
         <router-link
           :to="`/kantin/show/${kantin.id}`"
-          class="flex flex-col items-center bg-white border max-h-[150px] border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+          class="flex items-center bg-white border max-h-[150px] border-gray-200 rounded-lg shadow flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           <img
             v-if="kantin.foto == 'default.jpg'"
-            class="object-cover w-full h-[150px] to-transparent rounded-t-lg md:w-48 md:rounded-none md:rounded-l-lg"
+            class="object-cover w-32 h-[150px] to-transparent md:w-48 rounded-l-lg"
             src="images/default.jpg"
             alt="Foto Kantin.."
           />
           <img
             v-else
             :src="`http://localhost:8000/storage/${kantin.foto}`"
-            class="object-cover w-full h-[150px] to-transparent rounded-t-lg md:w-48 md:rounded-none md:rounded-l-lg"
+            class="object-cover w-32 h-[150px] to-transparent md:w-48 rounded-l-lg"
             alt="Foto Kantin.."
           />
-          <div class="flex flex-col justify-around p-4 leading-normal">
-            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <div class="flex flex-col justify-around ml-2 md:p-4">
+            <h5
+              class="mb-2 text-lg md:text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
+            >
               {{ excerpt(kantin.nama, 30) }}
             </h5>
             <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
@@ -121,3 +142,40 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style>
+.wave {
+  animation-name: wave-animation; /* Refers to the name of your @keyframes element below */
+  animation-duration: 2.5s; /* Change to speed up or slow down */
+  animation-iteration-count: infinite; /* Never stop waving :) */
+  transform-origin: 70% 70%; /* Pivot around the bottom-left palm */
+  display: inline-block;
+}
+
+@keyframes wave-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(14deg);
+  } /* The following five values can be played with to make the waving more or less extreme */
+  20% {
+    transform: rotate(-8deg);
+  }
+  30% {
+    transform: rotate(14deg);
+  }
+  40% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(0deg);
+  } /* Reset for the last half to pause */
+  100% {
+    transform: rotate(0deg);
+  }
+}
+</style>

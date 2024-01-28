@@ -17,6 +17,7 @@ const kantin_repository = useKantinRepository()
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref(false)
+const isLoadingSubmit = ref(false)
 const user = JSON.parse(localStorage.getItem('user'))
 const kantin = ref()
 const kantin_update_data = ref()
@@ -151,7 +152,7 @@ const onFileChangeProduk = (e) => {
   produk_data.foto = file
 }
 const onSubmitProduk = async () => {
-  isLoading.value = true
+  isLoadingSubmit.value = true
 
   const formdata = new FormData()
 
@@ -179,7 +180,7 @@ const onSubmitProduk = async () => {
     console.error(e)
   }
 
-  isLoading.value = false
+  isLoadingSubmit.value = false
 }
 // end of create produk
 
@@ -739,7 +740,7 @@ onMounted(async () => {
                               clip-rule="evenodd"
                             ></path>
                           </svg>
-                          <p v-if="isLoading">Loading...</p>
+                          <p v-if="isLoadingSubmit">Loading...</p>
                           <p v-else>Buat produk</p>
                         </button>
                       </div>
@@ -952,7 +953,7 @@ onMounted(async () => {
                             clip-rule="evenodd"
                           ></path>
                         </svg>
-                        <p v-if="isLoading">Loading...</p>
+                        <p v-if="isLoadingSubmit">Loading...</p>
                         <p v-else>Buat produk</p>
                       </button>
                     </div>

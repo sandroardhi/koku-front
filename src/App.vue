@@ -7,12 +7,16 @@ const keranjangStore = useKeranjangStore()
 const route = useRoute()
 
 const produkKuantitas = ref(0)
+const popup = ref(false)
 const totalHarga = ref(keranjangStore.getTotalHarga)
 
 const assignKuantitas = () => {
   const products = JSON.parse(keranjangStore.getProduk)
   if (products) {
+    popup.value = true
     produkKuantitas.value = products.reduce((total, product) => total + product.pivot.kuantitas, 0)
+  } else {
+    popup.value = false
   }
 }
 
@@ -20,7 +24,9 @@ watch(
   () => keranjangStore.getProduk,
   (newProduk) => {
     const products = JSON.parse(newProduk)
+
     if (products) {
+      popup.value = true
       produkKuantitas.value = products.reduce(
         (total, product) => total + product.pivot.kuantitas,
         0
@@ -32,6 +38,7 @@ watch(
 watch(
   () => keranjangStore.getTotalHarga,
   (newTotalHarga) => {
+    popup.value = true
     totalHarga.value = newTotalHarga
   }
 )
@@ -48,16 +55,18 @@ onMounted(() => {
 
 <template>
   <div class="box-border relative antialiased bg-white" v-auto-animate="{ duration: 500 }">
-    <RouterView />
+    <RouterView :key="route.fullPath"/>
     <router-link
       to="/keranjang"
       v-if="
-        produkKuantitas != 0 &&
+        popup == true &&
         route.path !== '/dashboard' &&
         !route.path.startsWith('/dashboard/') &&
-        route.path !== '/keranjang'
+        route.path !== '/keranjang' &&
+        route.path !== '/login' &&
+        route.path !== '/register'
       "
-      class="w-[50%] hover:bottom-9 duration-150 ease h-14 fixed left-1/2 transform -translate-x-1/2 bottom-7 rounded-full p-2 px-4 shadow-xl bg-yellow-300 flex items-center justify-between"
+      class="z-50 w-[50%] hover:bottom-9 duration-150 ease h-14 fixed left-1/2 transform -translate-x-1/2 bottom-7 rounded-full p-2 px-4 shadow-xl bg-yellow-300 flex items-center justify-between"
     >
       <div class="flex items-center space-x-3">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8">

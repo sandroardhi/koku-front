@@ -10,36 +10,6 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
-      path: '/kantin',
-      name: 'kantin',
-      component: () => import('../views/KantinListView.vue')
-    },
-    {
-      path: '/kantin/show/:id',
-      name: 'kantin-show',
-      component: () => import('../views/KantinDetailView.vue')
-    },
-    {
-      path: '/kategori',
-      name: 'kategori',
-      component: () => import('../views/KategoriView.vue')
-    },
-    {
-      path: '/keranjang',
-      name: 'keranjang',
-      component: () => import('../views/KeranjangView.vue')
-    },
-    {
-      path: '/kategori',
-      name: 'kategori',
-      component: () => import('../views/KategoriView.vue')
-    },
-    {
-      path: '/kategori/:id',
-      name: 'kategori-detail',
-      component: () => import('../views/KategoriDetailView.vue')
-    },
-    {
       path: '/login',
       name: 'login',
       component: () => import('../views/auth/LoginView.vue'),
@@ -56,12 +26,65 @@ const router = createRouter({
       }
     },
     {
-      path: '/unauthorized',
-      name: 'unauthorized',
-      component: () => import('../views/UnauthorizedView.vue'),
+      path: '/kantin',
+      name: 'kantin',
+      component: () => import('../views/KantinListView.vue')
+    },
+    {
+      path: '/kantin/show/:id',
+      name: 'kantin-show',
+      component: () => import('../views/KantinDetailView.vue')
+    },
+    {
+      path: '/kategori',
+      name: 'kategori',
+      component: () => import('../views/KategoriView.vue')
+    },
+    {
+      path: '/kategori/:id',
+      name: 'kategori-detail',
+      component: () => import('../views/KategoriDetailView.vue')
+    },
+    {
+      path: '/tujuan',
+      name: 'tujuan',
+      component: () => import('../views/TujuanView.vue'),
       meta: {
-        authPage: true
-      }
+        requireAuth: true
+      },
+    },
+    {
+      path: '/keranjang',
+      name: 'keranjang',
+      component: () => import('../views/KeranjangView.vue'),
+      meta: {
+        requireAuth: true
+      },
+    },
+    {
+      path: '/pesanan',
+      name: 'pesanan',
+      component: () => import('../views/pesanan/PesananView.vue'),
+      meta: {
+        requireAuth: true
+      },
+      children: [
+        {
+          path: '',
+          name: 'pesanan-belum-dibayar',
+          component: () => import('../views/pesanan/PesananBelumDibayarView.vue'),
+        },
+        {
+          path: 'berlangsung',
+          name: 'pesanan-berlangsung',
+          component: () => import('../views/pesanan/PesananBerlangsungView.vue'),
+        },
+        {
+          path: 'selesai',
+          name: 'pesanan-selesai',
+          component: () => import('../views/pesanan/PesananSelesaiView.vue'),
+        },
+      ]
     },
     {
       path: '/dashboard',
@@ -75,6 +98,22 @@ const router = createRouter({
           path: '',
           name: 'store-management',
           component: () => import('../views/dashboard/penjual-dashboard/StoreManagementView.vue'),
+          meta: {
+            requirePenjual: true
+          }
+        },
+        {
+          path: 'pesanan',
+          name: 'pesanan-proses',
+          component: () => import('../views/dashboard/penjual-dashboard/PesananProsesView.vue'),
+          meta: {
+            requirePenjual: true
+          }
+        },
+        {
+          path: 'pesanan/selesai',
+          name: 'pesanan-selesai',
+          component: () => import('../views/dashboard/penjual-dashboard/PesananSelesaiView.vue'),
           meta: {
             requirePenjual: true
           }
@@ -104,6 +143,14 @@ const router = createRouter({
           }
         }
       ]
+    },
+    {
+      path: '/unauthorized',
+      name: 'unauthorized',
+      component: () => import('../views/UnauthorizedView.vue'),
+      meta: {
+        authPage: true
+      }
     }
   ]
 })

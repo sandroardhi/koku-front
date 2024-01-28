@@ -85,7 +85,6 @@ function findProductById(productId) {
     }
   }
 
-  console.log('Product not found for ID:', productId)
   return null
 }
 

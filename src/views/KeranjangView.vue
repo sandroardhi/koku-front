@@ -6,8 +6,14 @@ import Navbar from '../components/common/Navbar.vue'
 import Button from '../components/common/Button.vue'
 import Alert from '../components/common/Alert.vue'
 import { useKeranjangStore } from '@/stores/keranjang'
+import { useAuthStore } from '@/stores/auth'
+import { useOrderRepository } from '@/composables/useOrderRepository'
+import { useAuthRepository } from '@/composables/useAuthRepository'
 
+const authStore = useAuthStore()
 const keranjangStore = useKeranjangStore()
+const auth_repository = useAuthRepository()
+const order_repository = useOrderRepository()
 const router = useRouter()
 const route = useRoute()
 
@@ -16,11 +22,13 @@ const isLoadingProduct = ref({})
 const keranjang = ref({})
 const totalHarga = ref(keranjangStore.getTotalHarga)
 const kantin = ref({})
+const tujuans = ref([])
 
 const fetchKeranjangData = async () => {
   isLoading.value = true
   try {
     keranjang.value = JSON.parse(keranjangStore.getProduk)
+    console.log(keranjang.value)
   } catch (e) {
     console.log(e)
   } finally {
@@ -41,6 +49,18 @@ const fetchKantinName = async () => {
     kantin.value = data
   } catch (e) {
     console.log(e)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const fetchTujuans = async () => {
+  isLoading.value = true
+  try {
+    const { data } = await auth_repository.tujuan()
+    tujuans.value = data
+  } catch (error) {
+    console.log(error)
   } finally {
     isLoading.value = false
   }
@@ -123,7 +143,7 @@ function findProductById(productId) {
 }
 
 const deleteProduct = async (product_id) => {
-  isLoading.value = true
+  isLoadingProduct.value[product_id] = true
   try {
     const data = {
       produk_id: parseInt(product_id)
@@ -140,20 +160,20 @@ const deleteProduct = async (product_id) => {
 // checkout logic
 const selectedPengiriman = ref('')
 const selectedTujuan = ref('')
+const catatan = ref('')
+const ongkir = ref(0)
 const selectedPembayaran = ref('')
 const dropdownPengiriman = ref(false)
 const dropdownTujuan = ref(false)
 const dropdownPembayaran = ref(false)
-const tujuan = ref(['Opsi 1', 'Opsi 2', 'Opsi 3'])
 const kosong = ref(null)
+const isLoadingPay = ref(false)
 
 const toggleDropdownTipePembayaran = () => {
   dropdownPembayaran.value = !dropdownPembayaran.value
 }
 const selectPembayaran = (option) => {
-  console.log(option)
   selectedPembayaran.value = option
-  console.log('after', selectedPembayaran.value)
   dropdownPembayaran.value = false
 }
 
@@ -161,9 +181,12 @@ const toggleDropdownTipePengiriman = () => {
   dropdownPengiriman.value = !dropdownPengiriman.value
 }
 const selectPengiriman = (option) => {
-  console.log(option)
   selectedPengiriman.value = option
-  console.log('after', selectedPengiriman.value)
+  if (option == 'Antar') {
+    ongkir.value = 2000
+  } else {
+    ongkir.value = 0
+  }
   dropdownPengiriman.value = false
 }
 
@@ -180,28 +203,75 @@ const alertToggle = () => {
   kosong.value = null
 }
 
-const checkout = () => {
+const checkout = async () => {
+  if (selectedPengiriman.value == 'Antar' && selectedTujuan.value == '') {
+    return (kosong.value = 'Isi tujuan pesananmu dulu')
+  }
   if (selectedPembayaran.value == '' || selectedPengiriman.value == '') {
     if (selectedPembayaran.value == '') {
-      return kosong.value = 'Isi tipe pembayaran dulu'
+      return (kosong.value = 'Isi tipe pembayaran dulu')
     } else if (selectedPengiriman.value == '') {
-      return kosong.value = 'Isi tipe pengiriman dulu'
-    } else if (selectedPengiriman.value == 'Antar' && selectedTujuan.value == '')
-    {
-      return kosong.value = 'Isi tujuan pesananmu dulu'
-    }
-     else {
-      return kosong.value = 'Isi tipe pengiriman dan pembayaran dulu'
+      return (kosong.value = 'Isi tipe pengiriman dulu')
+    } else {
+      return (kosong.value = 'Isi tipe pengiriman dan pembayaran dulu')
     }
   }
-  const data = {
-    produks: JSON.parse(keranjangStore.getProduk),
-    totalHarga: totalHarga.value,
-    tipePembayaran: selectedPembayaran.value,
-    tipePengiriman: selectedPengiriman.value,
-    tujuan: selectedTujuan.value
+
+  isLoadingPay.value = true
+  await authStore.csrf()
+  try {
+    const data = {
+      produkData: keranjang.value,
+      totalHarga: totalHarga.value,
+      tipePembayaran: selectedPembayaran.value,
+      tipePengiriman: selectedPengiriman.value,
+      tujuan: selectedTujuan.value,
+      catatan: catatan.value,
+      ongkir: ongkir.value,
+      keranjang_id: keranjang.value[0].pivot.keranjang_id
+    }
+    if (selectedPembayaran.value == 'Online') {
+      await order_repository
+        .payAndCreateOrder(data)
+        .then(async (response) => {
+          localStorage.setItem('produk', [])
+          localStorage.setItem('keranjang', {})
+
+          const data = response.data
+          // eslint-disable-next-line no-undef
+          snap.pay(data.snap_token.snap_token, {
+            onSuccess: function () {
+              window.location.href = '/pesanan/berlangsung'
+            },
+            onPending: function () {
+              window.location.href = '/pesanan'
+            },
+            onClose: function () {
+              window.location.href = '/pesanan'
+            }
+          })
+        })
+        .catch((error) => {
+          console.error('Error during Axios request:', error)
+        })
+    } else {
+      await order_repository
+        .payAndCreateOrder(data)
+        .then(async () => {
+          localStorage.setItem('produk', [])
+          localStorage.setItem('keranjang', {})
+
+          window.location.href = '/pesanan/berlangsung'
+        })
+        .catch((error) => {
+          console.error('Error during Axios request:', error)
+        })
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoadingPay.value = false
   }
-  console.log(data)
 }
 
 // end of checkout logic
@@ -217,15 +287,49 @@ const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR'
 })
+function isObjectNotEmpty(obj) {
+  for (let key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      return true // Object has at least one property, not empty
+    }
+  }
+  return false // Object is empty
+}
+
 onMounted(async () => {
+  let Script = document.createElement('script')
+  Script.setAttribute('src', 'https://app.sandbox.midtrans.com/snap/snap.js')
+  Script.setAttribute('data-client-key', import.meta.VUE_APP_MIDTRANS_CLIENT_KEY)
+  document.head.appendChild(Script)
   await fetchKeranjangData()
   fetchKantinName()
+  fetchTujuans()
 })
 </script>
 
 <template>
   <Navbar />
-  <div class="w-[80%] mx-auto">
+  <div class="w-[80%] mx-auto relative">
+    <router-link to="/">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-[50px] h-[50px] absolute -left-20 transition-all duration-150 hover:-translate-x-3"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+        <g id="SVGRepo_iconCarrier">
+          <path
+            d="M4 12H20M4 12L8 8M4 12L8 16"
+            stroke="#000"
+            stroke-width="1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </g>
+      </svg>
+    </router-link>
     <p class="text-5xl mb-3">Keranjang</p>
   </div>
   <div class="w-[80%] mx-auto p-4 mb-10 flex justify-center">
@@ -249,7 +353,7 @@ onMounted(async () => {
       <span class="sr-only">Loading...</span>
     </div>
     <div v-else class="w-full">
-      <div v-if="keranjang.length !== 0">
+      <div v-if="isObjectNotEmpty(keranjang)">
         <div v-for="kantin in organizedProducts" :key="kantin.id">
           <h2
             class="w-full h-10 mt-5 flex justify-start items-center text-2xl border-b font-semibold break-all"
@@ -365,27 +469,64 @@ onMounted(async () => {
                   @click="toggleDropdownTujuan"
                   class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 cursor-pointer"
                 >
-                  Pilih tujuan
+                  {{ selectedTujuan ? selectedTujuan : 'Pilih tujuan' }}
                 </div>
                 <ul
                   v-if="dropdownTujuan"
                   class="absolute w-full mt-1 bg-white border rounded border-gray-300 shadow"
                 >
                   <li
-                    v-for="(option, index) in tujuan"
+                    v-for="(option, index) in tujuans"
                     :key="index"
-                    @click="selectTujuan(option)"
+                    @click="selectTujuan(option.tujuan)"
                     class="py-2 px-3 cursor-pointer hover:bg-gray-100"
                   >
-                    {{ option }}
+                    {{ option.tujuan }}
                   </li>
-                  <li class="py-2 px-3">
-                    <input
-                      v-model="selectedTujuan"
-                      type="text"
-                      placeholder="Type your own option"
-                      class="w-full border-b border-gray-300 focus:outline-none"
-                    />
+                  <li class="py-2 px-3 flex items-center cursor-pointer">
+                    <router-link to="/tujuan"> Tambah tujuan </router-link>
+                    <svg
+                      viewBox="0 0 32 32"
+                      version="1.1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+                      fill="#000000"
+                      class="w-4 h-4 ml-2 mt-1"
+                    >
+                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        <title>plus-circle</title>
+                        <desc>Created with Sketch Beta.</desc>
+                        <defs></defs>
+                        <g
+                          id="Page-1"
+                          stroke="none"
+                          stroke-width="1"
+                          fill="none"
+                          fill-rule="evenodd"
+                          sketch:type="MSPage"
+                        >
+                          <g
+                            id="Icon-Set"
+                            sketch:type="MSLayerGroup"
+                            transform="translate(-464.000000, -1087.000000)"
+                            fill="#000000"
+                          >
+                            <path
+                              d="M480,1117 C472.268,1117 466,1110.73 466,1103 C466,1095.27 472.268,1089 480,1089 C487.732,1089 494,1095.27 494,1103 C494,1110.73 487.732,1117 480,1117 L480,1117 Z M480,1087 C471.163,1087 464,1094.16 464,1103 C464,1111.84 471.163,1119 480,1119 C488.837,1119 496,1111.84 496,1103 C496,1094.16 488.837,1087 480,1087 L480,1087 Z M486,1102 L481,1102 L481,1097 C481,1096.45 480.553,1096 480,1096 C479.447,1096 479,1096.45 479,1097 L479,1102 L474,1102 C473.447,1102 473,1102.45 473,1103 C473,1103.55 473.447,1104 474,1104 L479,1104 L479,1109 C479,1109.55 479.447,1110 480,1110 C480.553,1110 481,1109.55 481,1109 L481,1104 L486,1104 C486.553,1104 487,1103.55 487,1103 C487,1102.45 486.553,1102 486,1102 L486,1102 Z"
+                              id="plus-circle"
+                              sketch:type="MSShapeGroup"
+                            ></path>
+                          </g>
+                        </g>
+                      </g>
+                    </svg>
                   </li>
                 </ul>
               </div>
@@ -398,6 +539,8 @@ onMounted(async () => {
                     id="floating_standard"
                     class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                     placeholder=""
+                    autocomplete="off"
+                    v-model="catatan"
                   />
                   <label
                     for="floating_standard"
@@ -446,18 +589,34 @@ onMounted(async () => {
           />
         </div>
         <div class="w-full flex items-center justify-between mt-5">
-          <div>
-            <p>Total pesanan:</p>
-            <p class="text-xl">{{ formatter.format(totalHarga) }}</p>
+          <div v-if="ongkir == 2000" class="w-[200px]">
+            <div class="flex w-full justify-between">
+              <p class="text-sm">Ongkir:</p>
+              <p class="text-sm">{{ formatter.format(ongkir) }}</p>
+            </div>
+            <div class="flex w-full justify-between">
+              <p class="text-sm">Subtotal:</p>
+              <p class="text-sm">{{ formatter.format(totalHarga) }}</p>
+            </div>
+            <div class="w-full flex justify-between">
+              <p>Total:</p>
+              <p class="text-xl">{{ formatter.format(totalHarga + ongkir) }}</p>
+            </div>
+          </div>
+          <div v-else class="w-[200px]">
+            <div class="flex w-full justify-between">
+              <p>Subtotal:</p>
+              <p class="text-xl">{{ formatter.format(totalHarga) }}</p>
+            </div>
           </div>
           <div>
-            <Button type="yellow" text="Checkout" @click="checkout" />
+            <Button type="yellow" :text="isLoadingPay ? 'Loading..' : 'Checkout'" @click="checkout" />
           </div>
         </div>
       </div>
       <div v-else>
         <h2
-          class="w-full h-10 mt-5 flex justify-center items-center text-2xl border-b pb-3 font-semibold break-all"
+          class="w-full h-10 mt-5 flex justify-center items-center text-2xl border-b py-10 font-semibold break-all"
         >
           Belum ada produk apapun dikeranjangmu!
         </h2>

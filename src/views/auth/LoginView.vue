@@ -1,7 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
-import axios from 'axios'
 import { useAuthStore } from '../../stores/auth'
 
 const authStore = useAuthStore()
@@ -24,12 +23,7 @@ const clearError = () => {
 
 const onSubmit = async () => {
   isLoading.value = true
-  axios.defaults.withCredentials = true
-  axios.defaults.baseURL = 'http://localhost:8000'
-  axios.defaults.headers = {
-    'X-Requested-With': 'XMLHttpRequest'
-  }
-  await axios.get('/sanctum/csrf-cookie')
+  await authStore.csrf()
   try {
     await authStore.login(credentials)
     router.replace({ name: 'home' })
@@ -106,9 +100,7 @@ const onSubmit = async () => {
         <!-- <p class="text-center mt-5 font-semibold">Create An Account ? <router-link class="text-blue-600 hover:text-blue-700 hover:text-xl duration-300" to="/register" >Register</router-link></p> -->
         <p class="text-center mt-5 font-semibold">
           Belum punya akun?
-          <router-link
-            class="text-blue-600 hover:text-blue-700 duration-300"
-            to="/register"
+          <router-link class="text-blue-600 hover:text-blue-700 duration-300" to="/register"
             >Register</router-link
           >
         </p>

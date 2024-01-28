@@ -10,6 +10,7 @@ const role_repository = useRoleRepository()
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref()
+const isLoadingFetch = ref()
 const roles = ref([])
 const permissions = ref([])
 const rolePermission = ref([])
@@ -55,11 +56,11 @@ const selectedRole = ref({
   permission: []
 })
 const fetchSelectedRole = async (id) => {
-  isLoading.value = true
+  isLoadingFetch.value = true
   const { data } = await role_repository.fetch_edit_data(id)
   selectedRole.value.role = data.role.name
   rolePermission.value = data.rolePermissions
-  isLoading.value = false
+  isLoadingFetch.value = false
 }
 const isItemChecked = (value, index) => {
   if (rolePermission.value[value] === value) {
@@ -220,7 +221,7 @@ onMounted(() => {
                         v-model="selectedRole.role"
                         autocomplete="off"
                         id="nama"
-                        :placeholder="isLoading ? 'Sedang Loading' : ''"
+                        :placeholder="isLoadingFetch ? 'Sedang Loading' : ''"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                       />
                     </div>

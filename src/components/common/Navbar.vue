@@ -6,7 +6,6 @@ import { useAuthStore } from '../../stores/auth'
 
 const authStore = useAuthStore()
 
-const router = useRouter()
 const route = useRoute()
 const user = JSON.parse(localStorage.getItem('user'))
 const dropdown = ref(false)
@@ -23,7 +22,9 @@ const logout = async () => {
     localStorage.removeItem('user')
     localStorage.removeItem('access_token')
     localStorage.removeItem('role')
-    router.push({ name: 'login' })
+    localStorage.removeItem('produk')
+    localStorage.removeItem('keranjang')
+    window.location.href = '/login'
   }
 }
 const excerpt = (text, maxLength = 10, indicator = '...') => {
@@ -45,7 +46,7 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
 
       <div class="items-center justify-between hidden w-full md:flex md:w-auto" id="navbar-sticky">
         <ul
-          class="flex flex-col p-4 md:p-0 mt-4 font-medium rounded-lg md:flex-row md:space-x-8 md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
+          class="flex flex-col p-4 md:p-0 mt-4 font-medium rounded-lg md:flex-row md:space-x-5 md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
         >
           <li class="flex items-center justify-center">
             <router-link
@@ -83,7 +84,8 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  class="w-6 h-6 mr-1"
+                  class="w-6 h-6"
+                  :class="route.path === '/keranjang' ? 'mr-1' : ''"
                 >
                   <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                   <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -137,7 +139,143 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
                       stroke-linejoin="round"
                     ></path>
                   </g></svg></i
-              >Keranjang</router-link
+              ><span v-if="route.path === '/keranjang'">Keranjang</span></router-link
+            >
+          </li>
+          <li class="flex items-center justify-center" v-if="user">
+            <router-link
+              to="/pesanan"
+              :class="
+                route.path === '/pesanan' ||
+                route.path === '/pesanan/berlangsung' ||
+                route.path === '/pesanan/selesai'
+                  ? 'text-yellow-300'
+                  : ''
+              "
+              class="flex items-center py-2 pl-3 pr-4 text-black rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-[#FFB000] duration-150 ease group md:p-0"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                :class="
+                  route.path === '/pesanan' ||
+                  route.path === '/pesanan/berlangsung' ||
+                  route.path === '/pesanan/selesai'
+                    ? ' mr-1'
+                    : ''
+                "
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path
+                    d="M22 6V8.42C22 10 21 11 19.42 11H16V4.01C16 2.9 16.91 2 18.02 2C19.11 2.01 20.11 2.45 20.83 3.17C21.55 3.9 22 4.9 22 6Z"
+                    stroke="#292D32"
+                    :class="
+                      route.path === '/pesanan' ||
+                      route.path === '/pesanan/berlangsung' ||
+                      route.path === '/pesanan/selesai'
+                        ? 'stroke-yellow-300'
+                        : ''
+                    "
+                    class="group-hover:stroke-[#FFB000] duration-150 ease"
+                    stroke-width="1.5"
+                    stroke-miterlimit="10"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                  <path
+                    d="M2 7V21C2 21.83 2.94 22.3 3.6 21.8L5.31 20.52C5.71 20.22 6.27 20.26 6.63 20.62L8.29 22.29C8.68 22.68 9.32 22.68 9.71 22.29L11.39 20.61C11.74 20.26 12.3 20.22 12.69 20.52L14.4 21.8C15.06 22.29 16 21.82 16 21V4C16 2.9 16.9 2 18 2H7H6C3 2 2 3.79 2 6V7Z"
+                    stroke="#292D32"
+                    :class="
+                      route.path === '/pesanan' ||
+                      route.path === '/pesanan/berlangsung' ||
+                      route.path === '/pesanan/selesai'
+                        ? 'stroke-yellow-300'
+                        : ''
+                    "
+                    class="group-hover:stroke-[#FFB000] duration-150 ease"
+                    stroke-width="1.5"
+                    stroke-miterlimit="10"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                  <path
+                    opacity="0.4"
+                    d="M9 13.0098H12"
+                    stroke="#292D32"
+                    :class="
+                      route.path === '/pesanan' ||
+                      route.path === '/pesanan/berlangsung' ||
+                      route.path === '/pesanan/selesai'
+                        ? 'stroke-yellow-300'
+                        : ''
+                    "
+                    class="group-hover:stroke-[#FFB000] duration-150 ease"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                  <path
+                    opacity="0.4"
+                    d="M9 9.00977H12"
+                    stroke="#292D32"
+                    :class="
+                      route.path === '/pesanan' ||
+                      route.path === '/pesanan/berlangsung' ||
+                      route.path === '/pesanan/selesai'
+                        ? 'stroke-yellow-300'
+                        : ''
+                    "
+                    class="group-hover:stroke-[#FFB000] duration-150 ease"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                  <path
+                    opacity="0.4"
+                    d="M5.99609 13H6.00508"
+                    stroke="#292D32"
+                    :class="
+                      route.path === '/pesanan' ||
+                      route.path === '/pesanan/berlangsung' ||
+                      route.path === '/pesanan/selesai'
+                        ? 'stroke-yellow-300'
+                        : ''
+                    "
+                    class="group-hover:stroke-[#FFB000] duration-150 ease"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                  <path
+                    opacity="0.4"
+                    :class="
+                      route.path === '/pesanan' ||
+                      route.path === '/pesanan/berlangsung' ||
+                      route.path === '/pesanan/selesai'
+                        ? 'stroke-yellow-300'
+                        : ''
+                    "
+                    class="group-hover:stroke-[#FFB000] duration-150 ease"
+                    d="M5.99451 9H6.00349"
+                    stroke="#292D32"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </g>
+              </svg>
+              <span
+                v-if="
+                  route.path === '/pesanan' ||
+                  route.path === '/pesanan/berlangsung' ||
+                  route.path === '/pesanan/selesai'
+                "
+                >Pesanan</span
+              ></router-link
             >
           </li>
           <li class="flex items-center justify-center">

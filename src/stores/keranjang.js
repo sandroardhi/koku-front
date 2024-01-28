@@ -20,12 +20,18 @@ export const useKeranjangStore = defineStore('keranjang', {
     async getCartData() {
       const { data } = await keranjang_repository.getCartData()
 
-      if (data) {
+      if (data && data.keranjang) {
         this.produk = JSON.stringify(data.produkData)
-        this.totalHarga = calculateTotalHarga(data.produkData);
+        this.totalHarga = calculateTotalHarga(data.produkData)
 
         localStorage.setItem('produk', JSON.stringify(data.produkData))
         localStorage.setItem('keranjang', JSON.stringify(data.keranjang))
+      } else {
+        this.produk = null
+        this.totalHarga = null
+
+        localStorage.removeItem('produk')
+        localStorage.removeItem('keranjang')
       }
     },
     async updateKuantitas(data) {
@@ -40,7 +46,7 @@ export const useKeranjangStore = defineStore('keranjang', {
 
       if (storedKeranjang && storedProduk) {
         this.produk = storedProduk
-        this.totalHarga = calculateTotalHarga(JSON.parse(storedProduk));
+        this.totalHarga = calculateTotalHarga(JSON.parse(storedProduk))
       }
     }
   }
@@ -48,9 +54,10 @@ export const useKeranjangStore = defineStore('keranjang', {
 
 // Helper function to calculate totalHarga
 function calculateTotalHarga(produkData) {
-  // Your calculation logic here based on the structure of produkData
-  return produkData.reduce((total, product) => {
-    const productHarga = product.harga * product.pivot.kuantitas;
-    return total + productHarga;
-  }, 0);
+  if (produkData !== null) {
+    return produkData.reduce((total, product) => {
+      const productHarga = product.harga * product.pivot.kuantitas
+      return total + productHarga
+    }, 0)
+  }
 }
