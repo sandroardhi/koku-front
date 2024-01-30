@@ -41,7 +41,7 @@ const updateStatus = (order) => {
   }
   if (Array.isArray(order)) {
     order.forEach((item) => {
-      data.OrderBarang_id.push(item.id) 
+      data.OrderBarang_id.push(item.id)
     })
   }
   try {
@@ -52,6 +52,17 @@ const updateStatus = (order) => {
 }
 
 // helper
+const countdownTime = (created_at) => {
+  const now = new Date()
+  const createdAtDate = new Date(created_at)
+
+  const timeDifference = createdAtDate.getTime() + 30 * 60 * 1000 - now.getTime()
+
+  console.log(timeDifference)
+
+  return Math.max(0, timeDifference)
+}
+
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR'
@@ -93,9 +104,18 @@ onMounted(async () => {
           :key="index"
           class="col-span-1 p-5 bg-white rounded-lg"
         >
+          <div class="w-full h-10 border-b">
+            <vue-countdown
+              v-if="order"
+              :time="countdownTime(order[0].created_at)"
+              :interval="100"
+              v-slot="{ minutes, seconds }"
+            >
+             <marquee behavior="" direction="" scrollamount="10">Batas waktu terima pesanan: {{ minutes }} Menit, {{ seconds }} detik.</marquee>
+            </vue-countdown>
+          </div>
           <div class="w-full h-10 flex justify-between items-center">
             <p class="text-sm text-slate-500">#{{ order[0].order.unique_string }}</p>
-            <p class="text-sm text-slate-500">{{ order[0].order.created_at }}</p>
           </div>
           <div class="w-full border-b pb-3">
             <p class="py-1 text-lg font-semibold">Pesanan untuk :</p>
@@ -150,7 +170,25 @@ onMounted(async () => {
             <p class="text-xl">Total:</p>
             <p class="text-xl">{{ formatter.format(tambah_harga_produk(order)) }}</p>
           </div>
-          <form :action="route.path" @submit.prevent="updateStatus(order)" class="w-full">
+          <form
+            :action="route.path"
+            @submit.prevent="updateStatus(order)"
+            class="w-full"
+            v-if="order[0].order.status == 'Menunggu Konfirmasi'"
+          >
+            <button
+              type="submit"
+              class="hover:bg-[#FFB000] w-full hover:text-white rounded-lg text-center py-2 mt-5 text-xl transition-all duration-150 ease-in"
+            >
+              Terima Pesanan
+            </button>
+          </form>
+          <form
+            :action="route.path"
+            @submit.prevent="updateStatus(order)"
+            class="w-full"
+            v-else-if="order[0].order.status == 'Proses'"
+          >
             <button
               type="submit"
               class="hover:bg-[#FFB000] w-full hover:text-white rounded-lg text-center py-2 mt-5 text-xl transition-all duration-150 ease-in"

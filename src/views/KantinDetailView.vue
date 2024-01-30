@@ -35,7 +35,6 @@ const addToCart = async (productId) => {
       productId: productId
     }
     await keranjangStore.addToCart(data)
-    await keranjangStore.getCartData()
   } catch (e) {
     console.log(e)
   } finally {
@@ -51,7 +50,6 @@ const incrementKuantitas = async (productId) => {
       action: 'increment'
     }
     await keranjangStore.updateKuantitas(data)
-    await keranjangStore.getCartData()
   } catch (e) {
     console.log(e)
   } finally {
@@ -67,7 +65,6 @@ const decrementKuantitas = async (productId) => {
       action: 'decrement'
     }
     await keranjangStore.updateKuantitas(data)
-    await keranjangStore.getCartData()
   } catch (e) {
     console.log(e)
   } finally {

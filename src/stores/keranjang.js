@@ -15,7 +15,13 @@ export const useKeranjangStore = defineStore('keranjang', {
   },
   actions: {
     async addToCart(data) {
-      await keranjang_repository.addToCart(data)
+      const response = await keranjang_repository.addToCart(data)
+
+      this.produk = JSON.stringify(response.data.produkData)
+      this.totalHarga = calculateTotalHarga(response.data.produkData)
+
+      localStorage.setItem('produk', JSON.stringify(response.data.produkData))
+      localStorage.setItem('keranjang', JSON.stringify(response.data.keranjang))
     },
     async getCartData() {
       const { data } = await keranjang_repository.getCartData()
@@ -35,10 +41,22 @@ export const useKeranjangStore = defineStore('keranjang', {
       }
     },
     async updateKuantitas(data) {
-      await keranjang_repository.updateKuantitas(data)
+      const response = await keranjang_repository.updateKuantitas(data)
+
+      this.produk = JSON.stringify(response.data.produkData)
+      this.totalHarga = calculateTotalHarga(response.data.produkData)
+
+      localStorage.setItem('produk', JSON.stringify(response.data.produkData))
+      localStorage.setItem('keranjang', JSON.stringify(response.data.keranjang))
     },
     async deleteCartProduct(data) {
-      await keranjang_repository.deleteCartProduct(data)
+      const response = await keranjang_repository.deleteCartProduct(data)
+
+      this.produk = JSON.stringify(response.data.produkData)
+      this.totalHarga = calculateTotalHarga(response.data.produkData)
+
+      localStorage.setItem('produk', JSON.stringify(response.data.produkData))
+      localStorage.setItem('keranjang', JSON.stringify(response.data.keranjang))
     },
     checkKeranjangOnReload() {
       const storedProduk = localStorage.getItem('produk')

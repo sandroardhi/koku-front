@@ -112,7 +112,7 @@ const router = createRouter({
         },
         {
           path: 'pesanan/selesai',
-          name: 'pesanan-selesai',
+          name: 'dashboard-pesanan-selesai',
           component: () => import('../views/dashboard/penjual-dashboard/PesananSelesaiView.vue'),
           meta: {
             requirePenjual: true

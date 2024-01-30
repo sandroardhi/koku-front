@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import _debounce from 'lodash.debounce'
 import Navbar from '../components/common/Navbar.vue'
 import Button from '../components/common/Button.vue'
 import Alert from '../components/common/Alert.vue'
@@ -105,7 +106,6 @@ const incrementKuantitas = async (productId) => {
       action: 'increment'
     }
     await keranjangStore.updateKuantitas(data)
-    await keranjangStore.getCartData()
   } catch (e) {
     console.log(e)
   } finally {
@@ -121,7 +121,6 @@ const decrementKuantitas = async (productId) => {
       action: 'decrement'
     }
     await keranjangStore.updateKuantitas(data)
-    await keranjangStore.getCartData()
   } catch (e) {
     console.log(e)
   } finally {
@@ -148,13 +147,16 @@ const deleteProduct = async (product_id) => {
     const data = {
       produk_id: parseInt(product_id)
     }
-    await keranjangStore.deleteCartProduct(data)
-    await keranjangStore.getCartData()
+
+    const debouncedDelete = _debounce(async () => {
+      await keranjangStore.deleteCartProduct(data)
+      router.go()
+    }, 500)
+
+    await debouncedDelete()
   } catch (e) {
-    console.log(e)
-  } finally {
-    router.go()
-  }
+    console.error(e)
+  } 
 }
 
 // checkout logic
@@ -610,7 +612,11 @@ onMounted(async () => {
             </div>
           </div>
           <div>
-            <Button type="yellow" :text="isLoadingPay ? 'Loading..' : 'Checkout'" @click="checkout" />
+            <Button
+              type="yellow"
+              :text="isLoadingPay ? 'Loading..' : 'Checkout'"
+              @click="checkout"
+            />
           </div>
         </div>
       </div>

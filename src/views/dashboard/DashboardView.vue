@@ -81,7 +81,7 @@ const route = useRoute()
         <!-- to pesanan-selesai -->
         <SidebarList
           v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'penjual'"
-          :to="{ name: 'pesanan-selesai' }"
+          :to="{ name: 'dashboard-pesanan-selesai' }"
           spanText="Pesanan Selesai"
           currentRoute="/dashboard/pesanan/selesai"
         >

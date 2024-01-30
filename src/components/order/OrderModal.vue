@@ -314,6 +314,7 @@ onMounted(async () => {
               v-for="categorizedOrder in categorizedBarangs(order.order_barangs)"
               :key="categorizedOrder.id"
               class="w-full"
+              :class="order.status == 'Canceled' ? 'text-gray-500' : ''"
             >
               <div class="w-full flex items-center justify-between">
                 <router-link
@@ -321,20 +322,6 @@ onMounted(async () => {
                   class="pt-3 pb-1 text-xl font-semibold"
                   >{{ categorizedOrder.kantin_nama }}</router-link
                 >
-                <div v-if="order.payment_status == 'paid'">
-                  <p v-if="categorizedOrder.produkList[0].status == 'Dibuat'">
-                    Pesananmu lagi dibuatin :)
-                  </p>
-                  <div class="flex flex-col items-end" v-else-if="categorizedOrder.produkList[0].status == 'Selesai'">
-                    <p>Pesananmu udah <span class="text-green-400">selesai!</span></p>
-                    <p v-if="order.tipe_pengiriman == 'Antar'">
-                      Sekarang lagi dianterin ke kamu nih.
-                    </p>
-                    <p v-else-if="order.tipe_pengiriman == 'Ambil'">
-                      Kamu udah bisa ambil sekarang.
-                    </p>
-                  </div>
-                </div>
               </div>
               <div
                 v-for="produk in categorizedOrder.produkList"
@@ -342,18 +329,54 @@ onMounted(async () => {
                 class="pt-2 pb-1 flex justify-between items-center"
               >
                 <div class="flex items-center">
-                  <img
-                    :src="`http://localhost:8000/storage/${produk.foto}`"
-                    alt="foto produk"
-                    class="w-20 h-20 object-cover"
-                  />
-                  <p class="ml-3">
-                    {{ produk.kuantitas }} x <span>{{ produk.nama }}</span>
-                  </p>
+                  <div class="relative w-full">
+                    <img
+                      :src="`http://localhost:8000/storage/${produk.foto}`"
+                      alt="foto produk"
+                      class="w-20 h-20 object-cover"
+                    />
+                    <div
+                      :class="order.status == 'Canceled' ? 'absolute' : 'hidden'"
+                      class="w-20 h-20 inset-0 bg-gray-500 opacity-50 transition-opacity duration-300 group-hover:opacity-75"
+                    ></div>
+                  </div>
+                  <div class="ml-3 flex">
+                    <p>{{ produk.kuantitas }}x</p>
+                    <span>{{ produk.nama }}</span>
+                  </div>
                 </div>
                 <div>
                   <p>{{ formatter.format(produk.harga * produk.kuantitas) }}</p>
                 </div>
+              </div>
+              <div v-if="order.status == 'Proses'">
+                <p v-if="categorizedOrder.produkList[0].status == 'Dibuat'">
+                  Pesananmu lagi dibuatin :)
+                </p>
+                <div
+                  class="flex flex-col items-center"
+                  v-else-if="categorizedOrder.produkList[0].status == 'Selesai'"
+                >
+                  <p>Pesananmu udah <span class="text-green-400">selesai!</span></p>
+                  <p v-if="order.tipe_pengiriman == 'Antar'">
+                    Sekarang lagi dianterin ke kamu nih.
+                  </p>
+                  <p v-else-if="order.tipe_pengiriman == 'Ambil'">Kamu udah bisa ambil sekarang.</p>
+                </div>
+              </div>
+              <div
+                v-else-if="order.status == 'Menunggu Konfirmasi'"
+                class="flex flex-col items-center"
+              >
+                <p>Menunggu konfirmasi penjual</p>
+                <p>Max 30 menit kok :)</p>
+              </div>
+              <div
+                v-else-if="order.status == 'Canceled'"
+                class="flex flex-col items-center text-black"
+              >
+                <p>Yah, penjual tidak menerima pesananmu :(</p>
+                <p>Pesanan ini <span class="text-red-700">ter-cancel</span> secara otomatis</p>
               </div>
             </div>
             <div class="w-full items-center justify-between mt-5 border-t pt-3">

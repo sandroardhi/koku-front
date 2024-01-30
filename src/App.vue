@@ -60,6 +60,7 @@ onMounted(() => {
       to="/keranjang"
       v-if="
         popup == true &&
+        totalHarga !== 0 &&
         route.path !== '/dashboard' &&
         !route.path.startsWith('/dashboard/') &&
         route.path !== '/keranjang' &&
