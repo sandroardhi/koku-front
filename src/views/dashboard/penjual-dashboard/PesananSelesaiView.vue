@@ -12,21 +12,40 @@ const isLoading = ref()
 const orders = ref([])
 
 const OrderMasuk = async () => {
+  isLoading.value = true
   try {
-    const { data } = await order_repository.orderMasuk()
-    orders.value = data
+    const { data } = await order_repository.orderPenjualSelesai()
+    orders.value = Object.values(data)
   } catch (error) {
     console.log(error)
+  } finally {
+    isLoading.value = false
   }
 }
 
+const tambah_harga_produk = (order) => {
+  let total = 0
+
+  if (Array.isArray(order)) {
+    order.forEach((item) => {
+      total += item.harga * item.kuantitas
+    })
+  }
+
+  return total
+}
+
+const formatter = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR'
+})
 onMounted(() => {
   OrderMasuk()
 })
 </script>
 
 <template>
-  <Container title="Pesanan">
+  <Container title="Pesanan Selesai">
     <div
       role="status"
       v-if="isLoading"
@@ -51,13 +70,73 @@ onMounted(() => {
       <span class="sr-only">Loading...</span>
     </div>
     <div class="w-full px-10 py-5 min-h-[200px]" v-else>
-      <div class="w-full grid grid-cols-3 gap-4">
-        <div v-for="order in orders" :key="order.id" class="col-span-1 p-5 bg-white rounded-lg">
-          {{ order[0].order.unique_string }}
-          <div v-for="item in order" :key="item.id">
-            <p>{{ item.nama }}</p>
+      <div class="w-full grid grid-cols-3 gap-4" v-if="orders.length !== 0">
+        <div
+          v-for="(order, index) in orders.slice().reverse()"
+          :key="index"
+          class="col-span-1 p-5 bg-white rounded-lg"
+        >
+          <div class="w-full h-10 flex justify-between items-center">
+            <p class="text-sm text-slate-500">#{{ order[0].order.unique_string }}</p>
           </div>
+          <div class="w-full border-b pb-3">
+            <p class="py-1 text-lg font-semibold">Pesanan untuk :</p>
+            <p class="text-slate-700 text-md font-semibold">
+              {{
+                order[0].order.user.name +
+                (order[0].order.user.nomor_hp == null ? '' : ' - ' + order[0].order.user.nomor_hp)
+              }}
+            </p>
+            <p class="text-slate-700">
+              {{
+                formatter.format(order[0].order.total_harga) +
+                ' - ' +
+                order[0].order.tipe_pengiriman +
+                ' - ' +
+                order[0].order.tipe_pembayaran
+              }}
+            </p>
+            <div v-if="order[0].order.tipe_pengiriman == 'Antar'">
+              <p class="py-1 text-lg font-semibold">Tujuan :</p>
+              <p class="text-slate-700">
+                {{ order[0].order.tujuan }}
+              </p>
+            </div>
+            <div>
+              <p class="py-1 text-lg font-semibold">Catatan :</p>
+              <p class="text-slate-700">
+                {{ order[0].order.catatan == null ? 'Tidak ada' : order[0].order.catatan }}
+              </p>
+            </div>
+          </div>
+          <div
+            v-for="produk in order"
+            :key="produk.id"
+            class="py-2 flex justify-between items-center"
+          >
+            <div class="flex items-center">
+              <img
+                :src="`http://localhost:8000/storage/${produk.foto}`"
+                alt="foto produk"
+                class="w-10 h-10 object-cover"
+              />
+              <p class="ml-3 text-md">
+                {{ produk.kuantitas }} x <span>{{ produk.nama }}</span>
+              </p>
+            </div>
+            <div>
+              <p>{{ formatter.format(produk.harga * produk.kuantitas) }}</p>
+            </div>
+          </div>
+          <div class="w-full border-y py-2 flex justify-between">
+            <p class="text-xl">Total:</p>
+            <p class="text-xl">{{ formatter.format(tambah_harga_produk(order)) }}</p>
+          </div>
+          <p class="text-green-600 text-2xl font-semibold text-center mt-2">Pesanan selesai.</p>
         </div>
+      </div>
+      <div class="w-full mx-auto p-10 rounded-lg bg-white flex items-center justify-center" v-else>
+        <p class="text-2xl">Tidak ada apapun disini.</p>
       </div>
     </div>
   </Container>

@@ -3,6 +3,8 @@ import { useHttp } from './useHttp'
 export const useOrderRepository = () => {
   const http = useHttp()
 
+  // USER ORDER
+
   const payAndCreateOrder = (data) => http.post('/api/order/pay-and-create', data)
 
   const deleteOrder = (data) => http.post(`api/order/destroy`, data)
@@ -12,10 +14,25 @@ export const useOrderRepository = () => {
   const orderProses = () => http.get(`api/order/order-proses`)
 
   const orderSelesai = () => http.get(`api/order/order-selesai`)
-
-  const orderMasuk = () => http.get(`api/order/order-masuk`)
   
-  const updateStatus = (data) => http.post(`api/order/order-update-status`, data)
+  const updateUserStatusSelesai = (data) => http.post(`api/order/order-user-update-selesai`, data)
+
+
+  // END OF USER ORDER
+
+  // PENJUAL ORDER
+
+  const orderMasuk = () => http.get(`api/order-penjual/order-masuk`)
+  
+  const updateStatusDibuat = (data) => http.post(`api/order-penjual/order-update-dibuat`, data)
+  
+  const updateStatusSelesai = (data) => http.post(`api/order-penjual/order-update-selesai`, data)
+
+  const orderPenjualSelesai = () => http.get(`api/order-penjual/order-selesai`)
+
+  const orderPenjualGagal = () => http.get(`api/order-penjual/order-cancel`)
+
+  // END OF PENJUAL ORDER
 
   return {
     payAndCreateOrder,
@@ -23,7 +40,11 @@ export const useOrderRepository = () => {
     orderPending,
     orderProses,
     orderSelesai,
+    updateUserStatusSelesai,
     orderMasuk,
-    updateStatus
+    updateStatusDibuat,
+    updateStatusSelesai,
+    orderPenjualSelesai,
+    orderPenjualGagal
   }
 }

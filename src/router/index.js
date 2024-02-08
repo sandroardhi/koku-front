@@ -7,7 +7,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue')
+      component: () => import('../views/HomeView.vue'),
+      
     },
     {
       path: '/login',
@@ -28,62 +29,66 @@ const router = createRouter({
     {
       path: '/kantin',
       name: 'kantin',
-      component: () => import('../views/KantinListView.vue')
+      component: () => import('../views/KantinListView.vue'),
     },
     {
       path: '/kantin/show/:id',
       name: 'kantin-show',
-      component: () => import('../views/KantinDetailView.vue')
+      component: () => import('../views/KantinDetailView.vue'),
     },
     {
       path: '/kategori',
       name: 'kategori',
-      component: () => import('../views/KategoriView.vue')
+      component: () => import('../views/KategoriView.vue'),
     },
     {
       path: '/kategori/:id',
       name: 'kategori-detail',
-      component: () => import('../views/KategoriDetailView.vue')
+      component: () => import('../views/KategoriDetailView.vue'),
     },
     {
       path: '/tujuan',
       name: 'tujuan',
       component: () => import('../views/TujuanView.vue'),
       meta: {
-        requireAuth: true
-      },
+        requireAuth: true,
+        requirePelanggan: true
+      }
     },
     {
       path: '/keranjang',
       name: 'keranjang',
       component: () => import('../views/KeranjangView.vue'),
       meta: {
-        requireAuth: true
-      },
+        requireAuth: true,
+        requirePelanggan: true
+      }
     },
     {
       path: '/pesanan',
       name: 'pesanan',
       component: () => import('../views/pesanan/PesananView.vue'),
       meta: {
-        requireAuth: true
+        requireAuth: true,
+        requirePelanggan: true
       },
       children: [
         {
           path: '',
           name: 'pesanan-belum-dibayar',
           component: () => import('../views/pesanan/PesananBelumDibayarView.vue'),
+          
         },
         {
           path: 'berlangsung',
           name: 'pesanan-berlangsung',
-          component: () => import('../views/pesanan/PesananBerlangsungView.vue'),
+          component: () => import('../views/pesanan/PesananBerlangsungView.vue')
         },
         {
           path: 'selesai',
           name: 'pesanan-selesai',
-          component: () => import('../views/pesanan/PesananSelesaiView.vue'),
-        },
+          component: () => import('../views/pesanan/PesananSelesaiView.vue')
+        }
       ]
     },
     {
@@ -114,6 +119,14 @@ const router = createRouter({
           path: 'pesanan/selesai',
           name: 'dashboard-pesanan-selesai',
           component: () => import('../views/dashboard/penjual-dashboard/PesananSelesaiView.vue'),
+          meta: {
+            requirePenjual: true
+          }
+        },
+        {
+          path: 'pesanan/gagal',
+          name: 'dashboard-pesanan-gagal',
+          component: () => import('../views/dashboard/penjual-dashboard/PesananGagalView.vue'),
           meta: {
             requirePenjual: true
           }
@@ -159,17 +172,12 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requireAuth && !authStore.isAuthenticated) {
-    // Redirect to login if authentication is required but the user is not authenticated
     next('/login')
   } else if (to.meta.requireAdmin && authStore.getUserRole !== 'admin') {
-    // Redirect to unauthorized page if the user is not an admin
     next('/unauthorized')
-  } else if (
-    to.meta.requirePenjual &&
-    authStore.getUserRole !== 'penjual' &&
-    authStore.getUserRole !== 'admin'
-  ) {
-    // Redirect to unauthorized page if the user is not a penjual or admin
+  } else if (to.meta.requirePenjual && (authStore.getUserRole !== 'penjual' && authStore.getUserRole !== 'admin')) {
+    next('/unauthorized')
+  } else if (to.meta.requirePelanggan && (authStore.getUserRole !== 'user' && authStore.getUserRole !== 'admin')) {
     next('/unauthorized')
   } else {
     // Continue to the route

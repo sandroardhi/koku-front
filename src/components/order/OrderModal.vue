@@ -1,15 +1,21 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import _debounce from 'lodash.debounce'
 import Button from '../../components/common/Button.vue'
 import { VueperSlides, VueperSlide } from 'vueperslides'
 import 'vueperslides/dist/vueperslides.css'
+import { useOrderRepository } from '@/composables/useOrderRepository'
 
 defineProps({
   orders: Array
 })
+
+const order_repository = useOrderRepository()
+
 const router = useRouter()
+const route = useRoute()
 const isLoading = ref(false)
 const isLoadingPay = ref(false)
 const kantin = ref({})
@@ -35,7 +41,7 @@ const categorizedBarangs = (barangs) => {
   return Object.values(categorizedBarangs)
 }
 
-const fetchKantinName = async () => {
+const fetchKantin = async () => {
   isLoading.value = true
   try {
     const { data } = await axios.get('api/kantin/index/fetch-nama-kantin', {
@@ -50,6 +56,18 @@ const fetchKantinName = async () => {
     console.log(e)
   } finally {
     isLoading.value = false
+  }
+}
+
+const updateStatusUserSelesai = async (order_id) => {
+  const data = {
+    order_id: order_id
+  }
+  try {
+    await order_repository.updateUserStatusSelesai(data)
+    router.push('/pesanan/selesai')
+  } catch (error) {
+    console.error(error)
   }
 }
 
@@ -75,6 +93,24 @@ const pay = (order) => {
   }
 }
 
+const hapus = async (order_id) => {
+  isLoading.value = true
+  try {
+    const data = {
+      order_id: parseInt(order_id)
+    }
+
+    const debouncedDelete = _debounce(async () => {
+      await order_repository.deleteOrder(data)
+      router.go()
+    }, 500)
+
+    await debouncedDelete()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 // helper
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -93,8 +129,27 @@ const excerpt = (text, maxLength = 30, indicator = '..') => {
   return textCopy
 }
 
+const deadlineKonfirmasi = (created_at) => {
+  const createdAt = new Date(created_at)
+
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000
+  const newDate = new Date(createdAt.getTime() + oneDayInMilliseconds)
+
+  // Format the new date as needed
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }
+  const formattedNewDate = newDate.toLocaleDateString('en-US', options)
+
+  return formattedNewDate
+}
+
 const toggleModal = (orderId) => {
-  console.log(orderId)
   const modal = document.getElementById(`modal_${orderId}`)
 
   if (modal) {
@@ -102,6 +157,8 @@ const toggleModal = (orderId) => {
   }
   if (modal) {
     document.body.classList.toggle('overflow-y-hidden')
+  } else {
+    document.body.classList.add('overflow-y-hidden')
   }
 }
 
@@ -110,7 +167,7 @@ onMounted(async () => {
   Script.setAttribute('src', 'https://app.sandbox.midtrans.com/snap/snap.js')
   Script.setAttribute('data-client-key', import.meta.VUE_APP_MIDTRANS_CLIENT_KEY)
   document.head.appendChild(Script)
-  await fetchKantinName()
+  await fetchKantin()
 })
 </script>
 
@@ -208,10 +265,11 @@ onMounted(async () => {
       </div>
       <div
         class="w-full border-t-2 flex justify-end items-center pt-4 pb-2 mt-1"
-        v-if="order.status == 'pending'"
+        v-if="order.payment_status == 'pending'"
       >
         <button
           class="focus:outline-none -mt-2 mr-3 text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+          @click.stop="hapus(order.id)"
         >
           <svg
             viewBox="0 0 24 24"
@@ -239,9 +297,9 @@ onMounted(async () => {
     <!-- modal -->
     <div
       :id="'modal_' + order.id"
-      class="hidden bg-[rgba(0,0,0,0.5)] overflow-y-auto bg-overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%)] max-h-full"
+      class="hidden bg-[rgba(0,0,0,0.5)] overflow-y-auto bg-overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 min-h-[calc(100%)]"
     >
-      <div class="relative p-4 w-full max-w-xl max-h-full mx-auto mt-5 mb-14">
+      <div class="relative p-4 w-full max-w-xl mx-auto my-5">
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
           <!-- Modal header -->
@@ -314,7 +372,7 @@ onMounted(async () => {
               v-for="categorizedOrder in categorizedBarangs(order.order_barangs)"
               :key="categorizedOrder.id"
               class="w-full"
-              :class="order.status == 'Canceled' ? 'text-gray-500' : ''"
+              :class="categorizedOrder.produkList[0].status == 'Canceled' ? 'text-gray-500' : ''"
             >
               <div class="w-full flex items-center justify-between">
                 <router-link
@@ -336,47 +394,61 @@ onMounted(async () => {
                       class="w-20 h-20 object-cover"
                     />
                     <div
-                      :class="order.status == 'Canceled' ? 'absolute' : 'hidden'"
-                      class="w-20 h-20 inset-0 bg-gray-500 opacity-50 transition-opacity duration-300 group-hover:opacity-75"
+                      :class="
+                        categorizedOrder.produkList[0].status == 'Canceled'
+                          ? 'absolute w-20 h-20 inset-0 bg-gray-500 opacity-50 transition-opacity duration-300 group-hover:opacity-75'
+                          : 'hidden'
+                      "
                     ></div>
                   </div>
                   <div class="ml-3 flex">
                     <p>{{ produk.kuantitas }}x</p>
-                    <span>{{ produk.nama }}</span>
+                    <span class="ml-2">{{ produk.nama }}</span>
                   </div>
                 </div>
                 <div>
                   <p>{{ formatter.format(produk.harga * produk.kuantitas) }}</p>
                 </div>
               </div>
-              <div v-if="order.status == 'Proses'">
-                <p v-if="categorizedOrder.produkList[0].status == 'Dibuat'">
-                  Pesananmu lagi dibuatin :)
+              <p
+                class="text-center text-lg font-semibold"
+                v-if="categorizedOrder.produkList[0].status == 'Dibuat'"
+              >
+                Pesananmu sedang dibuat
+              </p>
+              <div
+                class="flex flex-col items-center text-lg font-semibold"
+                v-else-if="categorizedOrder.produkList[0].status == 'Selesai'"
+              >
+                <p class="text-center text-lg font-semibold">
+                  Pesananmu <span class="text-green-400">selesai.</span>
                 </p>
-                <div
-                  class="flex flex-col items-center"
-                  v-else-if="categorizedOrder.produkList[0].status == 'Selesai'"
+                <p
+                  class="text-center text-lg font-semibold"
+                  v-if="order.tipe_pengiriman == 'Antar'"
                 >
-                  <p>Pesananmu udah <span class="text-green-400">selesai!</span></p>
-                  <p v-if="order.tipe_pengiriman == 'Antar'">
-                    Sekarang lagi dianterin ke kamu nih.
-                  </p>
-                  <p v-else-if="order.tipe_pengiriman == 'Ambil'">Kamu udah bisa ambil sekarang.</p>
-                </div>
+                  Pesanan sedang diantar ke kamu.
+                </p>
+                <p
+                  v-else-if="order.tipe_pengiriman == 'Ambil'"
+                  class="text-center text-lg font-semibold"
+                >
+                  Kamu udah bisa ambil sekarang.
+                </p>
               </div>
               <div
-                v-else-if="order.status == 'Menunggu Konfirmasi'"
+                v-else-if="categorizedOrder.produkList[0].status == 'Menunggu Konfirmasi'"
                 class="flex flex-col items-center"
               >
-                <p>Menunggu konfirmasi penjual</p>
-                <p>Max 30 menit kok :)</p>
+                <p class="text-lg font-semibold">Menunggu konfirmasi penjual</p>
               </div>
               <div
-                v-else-if="order.status == 'Canceled'"
+                v-else-if="categorizedOrder.produkList[0].status == 'Canceled'"
                 class="flex flex-col items-center text-black"
               >
-                <p>Yah, penjual tidak menerima pesananmu :(</p>
-                <p>Pesanan ini <span class="text-red-700">ter-cancel</span> secara otomatis</p>
+                <p class="text-red-600 text-lg font-semibold text-center mt-2">
+                  Pesanan gagal karena penjual tidak merespon
+                </p>
               </div>
             </div>
             <div class="w-full items-center justify-between mt-5 border-t pt-3">
@@ -398,7 +470,7 @@ onMounted(async () => {
                 </div>
                 <div v-else class="w-full">
                   <div class="flex w-full justify-between">
-                    <p>Total ({{ order.order_barangs.length }} menu)::</p>
+                    <p>Total ({{ order.order_barangs.length }} menu) :</p>
                     <p class="text-xl">{{ formatter.format(order.total_harga) }}</p>
                   </div>
                 </div>
@@ -411,10 +483,11 @@ onMounted(async () => {
           >
             <div
               class="w-full flex justify-end items-center pt-4 pb-2 mt-1"
-              v-if="order.status == 'pending'"
+              v-if="order.payment_status == 'pending'"
             >
               <button
                 class="focus:outline-none -mt-2 mr-3 text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+                @click="hapus(order.id)"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -436,6 +509,26 @@ onMounted(async () => {
                 </svg>
               </button>
               <Button type="yellow" text="Bayar" @click.stop="pay(order)" />
+            </div>
+            <div
+              v-else-if="order.status == 'Konfirmasi Pembeli'"
+              class="w-full flex flex-col items-center mt-1"
+            >
+              <form
+                :action="route.path"
+                @submit.prevent="updateStatusUserSelesai(order.id)"
+                class="w-full"
+              >
+                <button
+                  type="submit"
+                  class="hover:bg-[#FFB000] w-full hover:text-white rounded-lg text-center py-2 text-xl transition-all duration-150 ease-in"
+                >
+                  Konfirmasi Pesanan
+                </button>
+              </form>
+              <p class="text-sm mt-3">
+                Pesanan akan otomatis dikonfirmasi pada {{ deadlineKonfirmasi(order.created_at) }}
+              </p>
             </div>
           </div>
         </div>

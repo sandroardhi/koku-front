@@ -11,15 +11,12 @@ const router = useRouter()
 const isLoading = ref()
 const orders = ref([])
 
-const OrderMasuk = async () => {
-  isLoading.value = true
+const OrderGagal = async () => {
   try {
-    const { data } = await order_repository.orderMasuk()
+    const { data } = await order_repository.orderPenjualGagal()
     orders.value = Object.values(data)
   } catch (error) {
     console.log(error)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -35,63 +32,18 @@ const tambah_harga_produk = (order) => {
   return total
 }
 
-const updateStatusDibuat = async (order) => {
-  const data = {
-    OrderBarang_id: []
-  }
-  if (Array.isArray(order)) {
-    order.forEach((item) => {
-      data.OrderBarang_id.push(item.id)
-    })
-  }
-  try {
-    await order_repository.updateStatusDibuat(data)
-    await OrderMasuk()
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const updateStatusSelesai = async (order) => {
-  const data = {
-    OrderBarang_id: []
-  }
-  if (Array.isArray(order)) {
-    order.forEach((item) => {
-      data.OrderBarang_id.push(item.id)
-    })
-  }
-  try {
-    await order_repository.updateStatusSelesai(data)
-    await OrderMasuk()
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-// helper
-const countdownTime = (created_at) => {
-  const now = new Date()
-  const createdAtDate = new Date(created_at)
-
-  const timeDifference = createdAtDate.getTime() + 30 * 60 * 1000 - now.getTime()
-
-  console.log(timeDifference)
-
-  return Math.max(0, timeDifference)
-}
-
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR'
 })
-onMounted(async () => {
-  await OrderMasuk()
+
+onMounted(() => {
+  OrderGagal()
 })
 </script>
 
 <template>
-  <Container title="Pesanan Berlangsung">
+  <Container title="Pesanan Gagal">
     <div
       role="status"
       v-if="isLoading"
@@ -122,20 +74,6 @@ onMounted(async () => {
           :key="index"
           class="col-span-1 p-5 bg-white rounded-lg"
         >
-          <div
-            class="w-full h-10 border-b"
-            v-if="order && order[0].status == 'Menunggu Konfirmasi'"
-          >
-            <vue-countdown
-              :time="countdownTime(order[0].created_at)"
-              :interval="100"
-              v-slot="{ minutes, seconds }"
-            >
-              <marquee behavior="" direction="" scrollamount="10"
-                >Batas waktu terima pesanan: {{ minutes }} Menit, {{ seconds }} detik.</marquee
-              >
-            </vue-countdown>
-          </div>
           <div class="w-full h-10 flex justify-between items-center">
             <p class="text-sm text-slate-500">#{{ order[0].order.unique_string }}</p>
           </div>
@@ -192,37 +130,7 @@ onMounted(async () => {
             <p class="text-xl">Total:</p>
             <p class="text-xl">{{ formatter.format(tambah_harga_produk(order)) }}</p>
           </div>
-          <form
-            :action="route.path"
-            @submit.prevent="updateStatusDibuat(order)"
-            class="w-full"
-            v-if="order[0].status == 'Menunggu Konfirmasi'"
-          >
-            <button
-              type="submit"
-              class="hover:bg-[#FFB000] w-full hover:text-white rounded-lg text-center py-2 mt-5 text-xl transition-all duration-150 ease-in"
-            >
-              Terima Pesanan
-            </button>
-          </form>
-          <form
-            :action="route.path"
-            @submit.prevent="updateStatusSelesai(order)"
-            class="w-full"
-            v-else-if="order[0].status == 'Dibuat'"
-          >
-            <button
-              type="submit"
-              class="hover:bg-[#FFB000] w-full hover:text-white rounded-lg text-center py-2 mt-5 text-xl transition-all duration-150 ease-in"
-            >
-              Selesai
-            </button>
-          </form>
-          <div v-else-if="order[0].order.status == 'Konfirmasi Pembeli'" class="w-full">
-            <p class="text-center text-green-800 text-lg font-semibold mt-3">
-              Menunggu konfirmasi makanan dari pembeli
-            </p>
-          </div>
+          <p class="text-red-600 text-center mt-2">Pesanan gagal karena penjual tidak merespon</p>
         </div>
       </div>
       <div class="w-full mx-auto p-10 rounded-lg bg-white flex items-center justify-center" v-else>
