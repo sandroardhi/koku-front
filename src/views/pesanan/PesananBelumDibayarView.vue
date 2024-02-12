@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useOrderRepository } from '@/composables/useOrderRepository'
-import OrderModal from '../../components/order/OrderModal.vue';
-
+import OrderModal from '../../components/order/OrderModal.vue'
+import Alert from '../../components/common/Alert.vue'
 
 const order_repository = useOrderRepository()
 const isLoading = ref(false)
 const orders = ref([])
+const alertMessage = ref(null)
 
 const fetchOrderPending = async () => {
   isLoading.value = true
@@ -18,6 +19,15 @@ const fetchOrderPending = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+const handlePengantarNotFound = (message) => {
+  console.log(message)
+  alertMessage.value = message
+}
+
+const alertMessageToggle = () => {
+  alertMessage.value = null
 }
 
 onMounted(async () => {
@@ -47,8 +57,17 @@ onMounted(async () => {
       <span class="sr-only">Loading...</span>
     </div>
     <div v-else>
+      <div class="w-full flex items-center justify-between my-5" v-if="alertMessage !== null">
+        <Alert
+          type="danger"
+          :message="alertMessage"
+          :alertToggle="() => alertMessageToggle()"
+          dismissable
+          class="w-full"
+        />
+      </div>
       <div class="w-full mx-auto grid grid-cols-2 md:grid-cols-4 gap-5" v-if="orders.length > 0">
-        <OrderModal :orders="orders"/>
+        <OrderModal :orders="orders" @error="handlePengantarNotFound" />
       </div>
       <div v-else>
         <h2

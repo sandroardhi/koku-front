@@ -130,7 +130,7 @@ onMounted(() => {
     </div>
 
     <div v-else>
-      <div class="w-full px-10 py-5 min-h-[200px]">
+      <div class="w-full py-5 min-h-[200px]">
         <div class="w-full bg-white shadow-xl rounded-lg p-5">
           <div class="w-full flex flex-col justify-between">
             <p class="text-xl font-semibold">Buat Kategori</p>
@@ -181,7 +181,7 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <div class="w-full px-10 py-5 min-h-[200px]">
+      <div class="w-full py-5 min-h-[200px]">
         <div class="w-full bg-white shadow-xl rounded-lg p-5 min-h-[100px]">
           <Table
             :labels="labels"
@@ -236,13 +236,6 @@ onMounted(() => {
                           placeholder=""
                         />
                         <img
-                          v-if="selectedKategori.foto == 'default.jpg'"
-                          class="object-cover max-h-32 mx-auto mt-2 rounded-lg"
-                          alt="Image"
-                          src="images/default.jpg"
-                        />
-                        <img
-                          v-else-if="selectedKategori.foto"
                           :src="`http://localhost:8000/storage/${selectedKategori.foto}`"
                           class="object-cover max-h-32 mx-auto mt-2 rounded-lg"
                           alt=""

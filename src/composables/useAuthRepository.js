@@ -13,8 +13,8 @@ export const useAuthRepository = () => {
     const logout = () => {
         return http.get("api/auth/logout")
     };
-    const profile = () => {
-        return http.get("api/auth/profile")
+    const getUser = () => {
+        return http.get("api/auth/get-user")
     };
     const csrf = () => {
         return http.get('/sanctum/csrf-cookie')
@@ -30,7 +30,7 @@ export const useAuthRepository = () => {
         login,
         register,
         logout,
-        profile,
+        getUser,
         csrf,
         tujuan,
         create_tujuan

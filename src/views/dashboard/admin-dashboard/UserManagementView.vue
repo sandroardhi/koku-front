@@ -94,7 +94,7 @@ onMounted(async () => {
       </svg>
       <span class="sr-only">Loading...</span>
     </div>
-    <div class="w-full px-10 py-5 min-h-[200px]" v-else>
+    <div class="w-full py-5 min-h-[200px]" v-else>
       <div class="w-full bg-white shadow-xl rounded-lg p-5 min-h-[100px]">
         <Table
           :labels="labels"

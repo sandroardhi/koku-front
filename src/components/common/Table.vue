@@ -58,13 +58,6 @@ const formatter = new Intl.NumberFormat('id-ID', {
         <td v-for="label in labels" :key="label.id" class="px-6 py-4">
           <template v-if="label.field === 'foto'">
             <img
-              v-if="item[label.field] == 'default.jpg'"
-              class="h-28 object-contain"
-              alt="Image"
-              src="images/default.jpg"
-            />
-            <img
-              v-else
               :src="`http://localhost:8000/storage/${item[label.field]}`"
               class="h-28 object-contain"
               alt="Image"

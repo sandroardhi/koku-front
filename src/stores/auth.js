@@ -34,6 +34,10 @@ export const useAuthStore = defineStore('auth', {
       this.authenticated = false
       this.role = ''
     },
+    async getUser() {
+      const { data } = await auth_repository.getUser()
+      localStorage.setItem('user', JSON.stringify(data.user))
+    },
     checkAuthenticationOnReload() {
       const storedToken = localStorage.getItem('access_token')
       const storedUser = localStorage.getItem('user')

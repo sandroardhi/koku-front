@@ -94,13 +94,18 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: () => import('../views/dashboard/DashboardView.vue'),
+      component: () => import('../views/dashboard/layouts/DashboardLayoutView.vue'),
       meta: {
         requireAuth: true
       },
       children: [
         {
           path: '',
+          name: 'index',
+          component: () => import('../views/dashboard/DashboardIndexView.vue'),
+        },
+        {
+          path: 'store-management',
           name: 'store-management',
           component: () => import('../views/dashboard/penjual-dashboard/StoreManagementView.vue'),
           meta: {
@@ -129,6 +134,30 @@ const router = createRouter({
           component: () => import('../views/dashboard/penjual-dashboard/PesananGagalView.vue'),
           meta: {
             requirePenjual: true
+          }
+        },
+        {
+          path: 'pengantar/pesanan',
+          name: 'pengantar-pesanan-proses',
+          component: () => import('../views/dashboard/pengantar-dashboard/PesananProsesView.vue'),
+          meta: {
+            requirePengantar: true
+          }
+        },
+        {
+          path: 'pengantar/pesanan/selesai',
+          name: 'pengantar-dashboard-pesanan-selesai',
+          component: () => import('../views/dashboard/pengantar-dashboard/PesananSelesaiView.vue'),
+          meta: {
+            requirePengantar: true
+          }
+        },
+        {
+          path: 'pengantar/pesanan/gagal',
+          name: 'pengantar-dashboard-pesanan-gagal',
+          component: () => import('../views/dashboard/pengantar-dashboard/PesananGagalView.vue'),
+          meta: {
+            requirePengantar: true
           }
         },
         {
@@ -161,9 +190,6 @@ const router = createRouter({
       path: '/unauthorized',
       name: 'unauthorized',
       component: () => import('../views/UnauthorizedView.vue'),
-      meta: {
-        authPage: true
-      }
     }
   ]
 })
@@ -176,6 +202,8 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.requireAdmin && authStore.getUserRole !== 'admin') {
     next('/unauthorized')
   } else if (to.meta.requirePenjual && (authStore.getUserRole !== 'penjual' && authStore.getUserRole !== 'admin')) {
+    next('/unauthorized')
+  } else if (to.meta.requirePengantar && (authStore.getUserRole !== 'pengantar' && authStore.getUserRole !== 'admin')) {
     next('/unauthorized')
   } else if (to.meta.requirePelanggan && (authStore.getUserRole !== 'user' && authStore.getUserRole !== 'admin')) {
     next('/unauthorized')

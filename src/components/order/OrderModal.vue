@@ -12,6 +12,8 @@ defineProps({
   orders: Array
 })
 
+const emit = defineEmits(['error'])
+
 const order_repository = useOrderRepository()
 
 const router = useRouter()
@@ -71,23 +73,32 @@ const updateStatusUserSelesai = async (order_id) => {
   }
 }
 
-const pay = (order) => {
+const pay = async (order) => {
   isLoadingPay.value = true
   try {
-    // eslint-disable-next-line no-undef
-    snap.pay(order.snap_token, {
-      onSuccess: function () {
-        window.location.href = '/pesanan/berlangsung'
-      },
-      onPending: function () {
-        router.push('/pesanan')
-      },
-      onClose: function () {
-        router.push('/pesanan')
-      }
-    })
+    const data = {
+      order: order
+    }
+    await order_repository.checkPengantar(data)
+    try {
+      // eslint-disable-next-line no-undef
+      snap.pay(order.snap_token, {
+        onSuccess: function () {
+          window.location.href = '/pesanan/berlangsung'
+        },
+        onPending: function () {
+          router.push('/pesanan')
+        },
+        onClose: function () {
+          router.push('/pesanan')
+        }
+      })
+    } catch (error) {
+      emit('error', 'Gagal membuka Midtrans Snap')
+    }
   } catch (error) {
     console.log(error)
+    emit('error', 'Pengantar tidak ditemukan')
   } finally {
     isLoadingPay.value = false
   }
@@ -175,7 +186,7 @@ onMounted(async () => {
   <div v-for="order in orders" :key="order.id" class="col-span-2">
     <!-- card -->
     <div
-      class="block pt-2 px-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 shadow relative"
+      class="block pt-2 px-2 bg-white border shadow-lg border-gray-200 rounded-lg hover:bg-gray-100 relative"
       @click="toggleModal(order.id)"
     >
       <div class="w-full h-10 flex justify-between items-center">
@@ -290,7 +301,7 @@ onMounted(async () => {
             </g>
           </svg>
         </button>
-        <Button type="yellow" text="Bayar" @click.stop="pay(order)" />
+        <Button type="yellow" :text="isLoadingPay ? 'Loading' : 'Bayar'" @click.stop="pay(order)" />
       </div>
       <div class="w-full border-t-2 py-5" v-else></div>
     </div>
@@ -369,7 +380,7 @@ onMounted(async () => {
               </div>
             </div>
             <div
-              v-for="categorizedOrder in categorizedBarangs(order.order_barangs)"
+              v-for="(categorizedOrder, index) in categorizedBarangs(order.order_barangs)"
               :key="categorizedOrder.id"
               class="w-full"
               :class="categorizedOrder.produkList[0].status == 'Canceled' ? 'text-gray-500' : ''"
@@ -395,7 +406,7 @@ onMounted(async () => {
                     />
                     <div
                       :class="
-                        categorizedOrder.produkList[0].status == 'Canceled'
+                        categorizedOrder.produkList[0].status == 'Gagal Dibuat'
                           ? 'absolute w-20 h-20 inset-0 bg-gray-500 opacity-50 transition-opacity duration-300 group-hover:opacity-75'
                           : 'hidden'
                       "
@@ -410,9 +421,17 @@ onMounted(async () => {
                   <p>{{ formatter.format(produk.harga * produk.kuantitas) }}</p>
                 </div>
               </div>
+              <div
+                v-if="categorizedOrder.produkList[0].status == 'Gagal Dibuat'"
+                class="flex flex-col items-center text-black"
+              >
+                <p class="text-red-600 text-lg font-semibold text-center mt-2">
+                  Pesanan gagal karena penjual tidak merespon
+                </p>
+              </div>
               <p
                 class="text-center text-lg font-semibold"
-                v-if="categorizedOrder.produkList[0].status == 'Dibuat'"
+                v-else-if="categorizedOrder.produkList[0].status == 'Dibuat'"
               >
                 Pesananmu sedang dibuat
               </p>
@@ -441,14 +460,6 @@ onMounted(async () => {
                 class="flex flex-col items-center"
               >
                 <p class="text-lg font-semibold">Menunggu konfirmasi penjual</p>
-              </div>
-              <div
-                v-else-if="categorizedOrder.produkList[0].status == 'Canceled'"
-                class="flex flex-col items-center text-black"
-              >
-                <p class="text-red-600 text-lg font-semibold text-center mt-2">
-                  Pesanan gagal karena penjual tidak merespon
-                </p>
               </div>
             </div>
             <div class="w-full items-center justify-between mt-5 border-t pt-3">

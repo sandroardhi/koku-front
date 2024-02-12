@@ -296,7 +296,11 @@ onMounted(async () => {
 
 <template>
   <Container title="Store Management">
-    <div role="status" v-if="isLoading" class="mx-auto w-full flex h-screen justify-center items-center">
+    <div
+      role="status"
+      v-if="isLoading"
+      class="mx-auto w-full flex h-screen justify-center items-center"
+    >
       <svg
         aria-hidden="true"
         class="inline w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-yellow-400"
@@ -319,10 +323,12 @@ onMounted(async () => {
     <div v-else>
       <!-- g ada kantin -->
       <div v-if="kantin == null" class="min-h-[200px] min-w-full flex justify-center items-center">
-        <div class="mt-[-53px] flex flex-col justify-center items-center">
+        <div
+          class="flex flex-col justify-center items-center bg-white w-full px-10 py-2 h-36 rounded-lg"
+        >
           <p class="mb-3 text-2xl">Kamu belum punya kantin nih..</p>
 
-          <Modal buttonText="Buat kantinmu dulu" modalTitle="Tambah Kantin" buttonWidth="80">
+          <Modal buttonText="Buat kantinmu dulu" modalTitle="Tambah Kantin" buttonWidth="20">
             <template #modalBody>
               <form
                 class="p-4 md:p-5"
@@ -371,14 +377,14 @@ onMounted(async () => {
                       id="deskripsi"
                       rows="4"
                       v-model="kantin_data.deskripsi"
-                      class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Kantin ini adalah kantin terenak sedunia"
                     ></textarea>
                   </div>
                 </div>
                 <button
                   type="submit"
-                  class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  class="text-white inline-flex items-center bg-yellow-300 hover:bg-yellow-400 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
                   <svg
                     class="me-1 -ms-1 w-5 h-5"
@@ -402,7 +408,7 @@ onMounted(async () => {
       </div>
 
       <!-- ada kakntin -->
-      <div v-else class="w-full px-10 py-5 min-h-[200px]">
+      <div v-else class="w-full py-5 min-h-[200px]">
         <div class="w-full bg-white shadow-xl rounded-lg p-5 mb-10">
           <!-- kantin detail head -->
           <div class="w-full h-10 flex justify-between">
@@ -502,13 +508,6 @@ onMounted(async () => {
           <div class="w-full flex justify-between items-center space-x-3">
             <!-- foto kantin -->
             <img
-              v-if="kantin[0].foto == 'default.jpg'"
-              src="images/default.jpg"
-              class="object-contain bg-[rgb(209,211,212)] h-72 rounded-lg"
-              alt=""
-            />
-            <img
-              v-else
               :src="`http://localhost:8000/storage/${kantin[0].foto}`"
               class="object-cover bg-[rgb(209,211,212)] h-72 rounded-lg"
               alt=""

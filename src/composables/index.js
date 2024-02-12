@@ -6,5 +6,6 @@ export * from "./useAdminRepository";
 export * from "./useKantinRepository";
 export * from "./useKategoriRepository";
 export * from "./useProdukRepository";
+export * from "./usePengantarRepository";
 export * from "./useRoleRepository";
 export * from "./useOrderRepository";

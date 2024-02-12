@@ -254,7 +254,9 @@ const checkout = async () => {
           })
         })
         .catch((error) => {
-          console.error('Error during Axios request:', error)
+          if (error.response) {
+            kosong.value = error.response.data.message
+          }
         })
     } else {
       await order_repository
@@ -266,7 +268,9 @@ const checkout = async () => {
           window.location.href = '/pesanan/berlangsung'
         })
         .catch((error) => {
-          console.error('Error during Axios request:', error)
+          if (error.response) {
+            kosong.value = error.response.data.message
+          }
         })
     }
   } catch (e) {

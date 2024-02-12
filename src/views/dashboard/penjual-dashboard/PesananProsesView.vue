@@ -115,12 +115,12 @@ onMounted(async () => {
       </svg>
       <span class="sr-only">Loading...</span>
     </div>
-    <div class="w-full px-10 py-5 min-h-[200px]" v-else>
-      <div class="w-full grid grid-cols-3 gap-4" v-if="orders.length !== 0">
+    <div class="w-full py-5 min-h-[200px]" v-else>
+      <div class="w-full grid grid-cols-6 gap-4" v-if="orders.length !== 0">
         <div
           v-for="(order, index) in orders.slice().reverse()"
           :key="index"
-          class="col-span-1 p-5 bg-white rounded-lg"
+          class="col-span-6 md:col-span-3 lg:col-span-2 p-5 bg-white rounded-lg shadow-xl"
         >
           <div
             class="w-full h-10 border-b"
@@ -225,7 +225,7 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div class="w-full mx-auto p-10 rounded-lg bg-white flex items-center justify-center" v-else>
+      <div class="w-full mx-auto p-10 rounded-lg bg-white flex items-center justify-center shadow-md" v-else>
         <p class="text-2xl">Tidak ada apapun disini.</p>
       </div>
     </div>

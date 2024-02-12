@@ -9,6 +9,8 @@ export const useOrderRepository = () => {
 
   const deleteOrder = (data) => http.post(`api/order/destroy`, data)
 
+  const checkPengantar = (data) => http.post(`api/order/check-pengantar`, data)
+
   const orderPending = () => http.get(`api/order/order-pending`)
 
   const orderProses = () => http.get(`api/order/order-proses`)
@@ -37,6 +39,7 @@ export const useOrderRepository = () => {
   return {
     payAndCreateOrder,
     deleteOrder,
+    checkPengantar,
     orderPending,
     orderProses,
     orderSelesai,

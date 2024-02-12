@@ -5,9 +5,13 @@ defineProps({
 </script>
 
 <template>
-  <div class="bg-white w-full h-[53px] py-3 px-5">
-    <p class="text-lg font-medium">{{ title }}</p>
-  </div>
+  <div class="p-5">
+    <div class="bg-[#FEFEFE] w-full h-[53px] rounded-lg py-3 px-5 shadow-md">
+      <p class="text-lg font-medium">{{ title }}</p>
+    </div>
 
-  <slot />
+    <div class="">
+      <slot />
+    </div>
+  </div>
 </template>
