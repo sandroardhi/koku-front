@@ -2,7 +2,6 @@
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '../../stores/auth'
-import Alert from '../../components/common/Alert.vue'
 
 const authStore = useAuthStore()
 
@@ -10,11 +9,15 @@ const route = useRoute()
 const router = useRouter()
 
 const credentials = reactive({
+  name: '',
   email: '',
   password: '',
-  device_name: 'browser'
+  password_confirmation: '',
+  tipe_user: 'user',
+  status: 'active',
+  device_name: 'browser',
+  role_id: '1'
 })
-const isLoading = ref(false)
 
 const error = ref('')
 
@@ -22,17 +25,13 @@ const clearError = () => {
   error.value = ''
 }
 
+const isLoading = ref(false)
 const onSubmit = async () => {
   isLoading.value = true
-  await authStore.csrf()
   try {
-    await authStore.login(credentials)
-    const role = localStorage.getItem('role')
-    if (role == 'user') {
-      router.replace({ name: 'home' })
-    } else {
-      router.replace({ name: 'index' })
-    }
+    await authStore.registerPenjual(credentials)
+
+    router.push({ name: 'login' })
   } catch (e) {
     if (e.response && e.response.status === 422) {
       const validationErrors = e.response.data.errors
@@ -41,16 +40,13 @@ const onSubmit = async () => {
         error.value = validationErrors.email[0]
       }
     }
-    if (e.response && e.response.status === 403) {
-      error.value = e.response.data.message
-    }
   }
   isLoading.value = false
 }
 </script>
 
 <template>
-  <main class="grid grid-cols-12">
+  <main class="grid grid-cols-12 overflow-hidden">
     <section class="col-span-6 bg-[#f7f2f2] min-h-screen shadow-lg relative">
       <router-link to="/" class="absolute top-4 left-3">
         <span class="text-3xl text-black font-bold">KoKu!</span>
@@ -58,13 +54,23 @@ const onSubmit = async () => {
       <form
         :action="route.path"
         method="post"
-        class="mt-36 p-4 lg:mt-0 lg:p-40"
+        class="w-[50%] mx-auto mt-20"
         @submit.prevent="onSubmit"
       >
         <div class="mb-4">
-          <label for="email" class="block mb-2">Email</label>
+          <label for="name" class="block mb-2">Nama</label>
           <input
             type="text"
+            class="border p-2 w-full bg-gray-50 rounded outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+            placeholder="Sandro Ardhi Saputra"
+            v-model="credentials.name"
+            required
+          />
+        </div>
+        <div class="mb-4">
+          <label for="email" class="block mb-2">Email</label>
+          <input
+            type="email"
             class="border p-2 w-full bg-gray-50 rounded outline-none focus:ring-2 focus:ring-blue-300 transition-all"
             placeholder="someone@example.com"
             v-model="credentials.email"
@@ -77,37 +83,59 @@ const onSubmit = async () => {
             type="password"
             class="border p-2 w-full bg-gray-50 rounded outline-none focus:ring-2 focus:ring-blue-300 transition-all"
             v-model="credentials.password"
-            placeholder="password"
+            placeholder="*******"
             required
           />
         </div>
-        <Alert
-          type="danger"
-          :message="error"
-          :alertToggle="() => clearError()"
-          dismissable
-          class="w-full mb-3"
+        <div class="mb-4">
+          <label for="password_confirmation" class="block mb-2">Confirm Password</label>
+          <input
+            type="password"
+            class="border p-2 w-full bg-gray-50 rounded outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+            v-model="credentials.password_confirmation"
+            placeholder="*******"
+            required
+          />
+        </div>
+        <div
+          class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
           v-if="error"
-        />
+          @click="clearError"
+        >
+          <span class="block sm:inline font-bold">{{ error }}</span>
+          <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <svg
+              class="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <title>Close</title>
+              <path
+                d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"
+              />
+            </svg>
+          </span>
+        </div>
         <button
           type="submit"
-          class="border p-3 text-white active:bg-yellow-400 hover:bg-yellow-200 w-full rounded bg-yellow-300 transition-colors duration-300"
+          class="border p-3 text-white active:bg-yellow-400 hover:bg-yellow-200 w-full rounded bg-yellow-300 transition-colors"
         >
           <p v-if="isLoading">Loading...</p>
-          <p v-else>Masuk</p>
+          <p v-else>Daftar</p>
         </button>
-        <!-- <p class="text-center mt-5 font-semibold">Create An Account ? <router-link class="text-yellow-600 hover:text-yellow-700 hover:text-xl duration-300" to="/register" >Register</router-link></p> -->
-        <p class="text-center mt-5 font-semibold">
-          Belum punya akun?
-          <router-link class="text-yellow-300 hover:text-yellow-200 duration-300" to="/register"
-            >Register</router-link
+        <p class="text-center mt-3 font-semibold">
+          Sudah punya akun?
+          <router-link class="text-yellow-300 hover:text-yellow-200 duration-300" to="/login"
+            >Login</router-link
           >
         </p>
       </form>
     </section>
     <section class="col-span-6 bg-white min-h-screen shadow-lg relative">
       <div class="w-full mx-auto flex flex-col justify-center items-center mt-10">
-        <p class="text-[20px] font-semibold">Awali Langkahmu Dengan Login!</p>
+        <p class="text-[20px] font-semibold">Daftar Menjadi Mitra!</p>
         <p class="text-[55px] -mt-2 font-bold border-b">
           KoKu
           <svg
@@ -130,9 +158,9 @@ const onSubmit = async () => {
         </p>
         <p class="text-[15px] font-semibold">Kantin Online Ku!</p>
       </div>
-      <div class="w-[470px] h-[470px] absolute left-1/2 transform -translate-x-1/2 -mt-10 ml-3">
+      <div class="w-[500px] h-[500px] absolute left-1/2 transform -translate-x-1/2 -mt-10">
         <img
-          src="../../../public/images/undraw_eating_together_re_ux62.svg"
+          src="../../../public/images/undraw_tasting_re_3k5a.svg"
           class="w-full h-full object-contain bg-transparent"
           alt=""
         />

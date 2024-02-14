@@ -8,7 +8,9 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../views/HomeView.vue'),
-      
+      meta: {
+        requirePelanggan: true
+      }
     },
     {
       path: '/login',
@@ -22,6 +24,14 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: () => import('../views/auth/RegisterView.vue'),
+      meta: {
+        authPage: true
+      }
+    },
+    {
+      path: '/register-penjual',
+      name: 'register-penjual',
+      component: () => import('../views/auth/RegisterPenjualView.vue'),
       meta: {
         authPage: true
       }
@@ -103,6 +113,9 @@ const router = createRouter({
           path: '',
           name: 'index',
           component: () => import('../views/dashboard/DashboardIndexView.vue'),
+          meta: {
+            requireNotUser: true
+          },
         },
         {
           path: 'store-management',
@@ -201,13 +214,20 @@ router.beforeEach((to, from, next) => {
     next('/login')
   } else if (to.meta.requireAdmin && authStore.getUserRole !== 'admin') {
     next('/unauthorized')
-  } else if (to.meta.requirePenjual && (authStore.getUserRole !== 'penjual' && authStore.getUserRole !== 'admin')) {
+  } else if (to.meta.requirePenjual && authStore.getUserRole !== 'penjual') {
     next('/unauthorized')
-  } else if (to.meta.requirePengantar && (authStore.getUserRole !== 'pengantar' && authStore.getUserRole !== 'admin')) {
+  } else if (to.meta.requirePengantar && authStore.getUserRole !== 'pengantar') {
     next('/unauthorized')
-  } else if (to.meta.requirePelanggan && (authStore.getUserRole !== 'user' && authStore.getUserRole !== 'admin')) {
+  } else if (to.meta.requirePelanggan && authStore.getUserRole !== 'user') {
+    if (authStore.isAuthenticated) {
+      next('/unauthorized'); // Redirect if authenticated but not the required role
+    } else {
+      next(); // Allow access for users not logged in
+    }
+  }else if (to.meta.requireNotUser && authStore.getUserRole == 'user') {
     next('/unauthorized')
-  } else {
+  }
+   else {
     // Continue to the route
     next()
   }

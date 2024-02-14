@@ -7,7 +7,7 @@ const auth_repository = useAuthRepository()
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     authenticated: false,
-    role: ''
+    role: null
   }),
   getters: {
     isAuthenticated: (state) => state.authenticated,
@@ -24,15 +24,20 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
         localStorage.setItem('role', data.role)
+
+        return data
       }
     },
     async register(credentials) {
       await auth_repository.register(credentials)
     },
+    async registerPenjual(credentials) {
+      await auth_repository.registerPenjual(credentials)
+    },
     async logout() {
       await auth_repository.logout()
       this.authenticated = false
-      this.role = ''
+      this.role = null
     },
     async getUser() {
       const { data } = await auth_repository.getUser()

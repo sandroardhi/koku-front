@@ -10,6 +10,9 @@ export const useAuthRepository = () => {
     const register = (credentials) => {
         return http.post("api/auth/register", credentials)
     };
+    const registerPenjual = (credentials) => {
+        return http.post("api/auth/register-penjual", credentials)
+    };
     const logout = () => {
         return http.get("api/auth/logout")
     };
@@ -33,6 +36,7 @@ export const useAuthRepository = () => {
         getUser,
         csrf,
         tujuan,
-        create_tujuan
+        create_tujuan,
+        registerPenjual
     }
 };
