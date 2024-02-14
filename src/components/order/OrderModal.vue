@@ -150,10 +150,7 @@ const deadlineKonfirmasi = (created_at) => {
   const options = {
     year: 'numeric',
     month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+    day: '2-digit'
   }
   const formattedNewDate = newDate.toLocaleDateString('en-US', options)
 
@@ -446,7 +443,8 @@ onMounted(async () => {
                   class="text-center text-lg font-semibold"
                   v-if="order.tipe_pengiriman == 'Antar'"
                 >
-                  Pesanan sedang diantar ke kamu.
+                  <span v-if="order.status == 'Konfirmasi Pembeli'">Pesanan sudah sampai.</span>
+                  <span v-else>Pesananmu sedang diantar ke kamu.</span>
                 </p>
                 <p
                   v-else-if="order.tipe_pengiriman == 'Ambil'"

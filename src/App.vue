@@ -54,7 +54,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="box-border relative antialiased bg-white" v-auto-animate="{ duration: 500 }">
+  <div class="box-border relative antialiased bg-white" >
     <RouterView :key="route.fullPath"/>
     <router-link
       to="/keranjang"

@@ -53,7 +53,7 @@ const route = useRoute()
 
         <!-- to pengantar-pesanan-proses -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'pengantar'"
+          v-if="authStore.getUserRole == 'pengantar'"
           :to="{ name: 'pengantar-pesanan-proses' }"
           spanText="Pesanan"
           currentRoute="/dashboard/pengantar/pesanan"
@@ -95,7 +95,7 @@ const route = useRoute()
 
         <!-- to pengantar-pesanan-selesai -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'pengantar'"
+          v-if="authStore.getUserRole == 'pengantar'"
           :to="{ name: 'pengantar-dashboard-pesanan-selesai' }"
           spanText="Pesanan Selesai"
           currentRoute="/dashboard/pengantar/pesanan/selesai"
@@ -138,7 +138,7 @@ const route = useRoute()
 
         <!-- to pengantar-pesanan-canceled -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'pengantar'"
+          v-if="authStore.getUserRole == 'pengantar'"
           :to="{ name: 'pengantar-dashboard-pesanan-gagal' }"
           spanText="Pesanan Gagal"
           currentRoute="/dashboard/pengantar/pesanan/gagal"
@@ -181,7 +181,7 @@ const route = useRoute()
 
         <!-- to store-management -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'penjual'"
+          v-if="authStore.getUserRole == 'penjual'"
           :to="{ name: 'store-management' }"
           spanText="Kantin"
           currentRoute="/dashboard/store-management"
@@ -207,7 +207,7 @@ const route = useRoute()
 
         <!-- to pesanan-proses -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'penjual'"
+          v-if="authStore.getUserRole == 'penjual'"
           :to="{ name: 'pesanan-proses' }"
           spanText="Pesanan"
           currentRoute="/dashboard/pesanan"
@@ -249,7 +249,7 @@ const route = useRoute()
 
         <!-- to pesanan-selesai -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'penjual'"
+          v-if="authStore.getUserRole == 'penjual'"
           :to="{ name: 'dashboard-pesanan-selesai' }"
           spanText="Pesanan Selesai"
           currentRoute="/dashboard/pesanan/selesai"
@@ -292,7 +292,7 @@ const route = useRoute()
 
         <!-- to pesanan-canceled -->
         <SidebarList
-          v-if="authStore.getUserRole == 'admin' || authStore.getUserRole == 'penjual'"
+          v-if="authStore.getUserRole == 'penjual'"
           :to="{ name: 'dashboard-pesanan-gagal' }"
           spanText="Pesanan Gagal"
           currentRoute="/dashboard/pesanan/gagal"
@@ -451,7 +451,7 @@ const route = useRoute()
       </ul>
     </aside>
 
-    <div class="col-span-10 bg-[#F4F4F8]">
+    <div class="col-span-10 bg-[#F4F4F8]"  v-auto-animate="{ duration: 500 }">
       <RouterView />
     </div>
   </div>

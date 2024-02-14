@@ -89,7 +89,7 @@ onMounted(() => {
             </p>
             <p class="text-slate-700">
               {{
-                formatter.format(order[0].order.total_harga) +
+                formatter.format(tambah_harga_produk(order)) +
                 ' - ' +
                 order[0].order.tipe_pengiriman +
                 ' - ' +

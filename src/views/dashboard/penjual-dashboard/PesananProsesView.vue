@@ -81,6 +81,23 @@ const countdownTime = (created_at) => {
   return Math.max(0, timeDifference)
 }
 
+const deadlineKonfirmasi = (created_at) => {
+  const createdAt = new Date(created_at)
+
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000
+  const newDate = new Date(createdAt.getTime() + oneDayInMilliseconds)
+
+  // Format the new date as needed
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit'
+  }
+  const formattedNewDate = newDate.toLocaleDateString('en-US', options)
+
+  return formattedNewDate
+}
+
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR'
@@ -149,7 +166,7 @@ onMounted(async () => {
             </p>
             <p class="text-slate-700">
               {{
-                formatter.format(order[0].order.total_harga) +
+                formatter.format(tambah_harga_produk(order)) +
                 ' - ' +
                 order[0].order.tipe_pengiriman +
                 ' - ' +
@@ -218,14 +235,22 @@ onMounted(async () => {
               Selesai
             </button>
           </form>
-          <div v-else-if="order[0].order.status == 'Konfirmasi Pembeli'" class="w-full">
-            <p class="text-center text-green-800 text-lg font-semibold mt-3">
-              Menunggu konfirmasi makanan dari pembeli
+          <div v-if="order[0].order.status == 'Dikirim'" class="w-full">
+            <p class="text-center text-green-800 text-lg font-semibold mt-3">Sedang Dikirim</p>
+          </div>
+          <div v-else-if="order[0].order.status == 'Konfirmasi Pembeli'" class="text-sm mt-3">
+            <p class="font-semibold text-green-500">Menunggu Konfirmasi Pembeli</p>
+            <p>
+              Pesanan akan otomatis dikonfirmasi pada
+              {{ deadlineKonfirmasi(order[0].order.created_at) }}
             </p>
           </div>
         </div>
       </div>
-      <div class="w-full mx-auto p-10 rounded-lg bg-white flex items-center justify-center shadow-md" v-else>
+      <div
+        class="w-full mx-auto p-10 rounded-lg bg-white flex items-center justify-center shadow-md"
+        v-else
+      >
         <p class="text-2xl">Tidak ada apapun disini.</p>
       </div>
     </div>

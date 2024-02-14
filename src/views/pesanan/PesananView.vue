@@ -1,17 +1,15 @@
 <script setup>
-import { ref} from 'vue'
+import { ref } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import Navbar from '../../components/common/Navbar.vue'
 
-
 const isLoading = ref(false)
 const route = useRoute()
-
 </script>
 
 <template>
   <Navbar />
-  <div class="w-[80%] mx-auto p-4 mb-10">
+  <div class="w-[80%] mx-auto p-4 mb-10 min-h-screen">
     <div role="status" v-if="isLoading" class="mx-auto w-full flex justify-center items-center">
       <svg
         aria-hidden="true"
@@ -32,7 +30,7 @@ const route = useRoute()
       <span class="sr-only">Loading...</span>
     </div>
     <div v-else>
-      <div class="w-full mx-auto relative ">
+      <div class="w-full mx-auto relative">
         <router-link to="/">
           <svg
             viewBox="0 0 24 24"
@@ -90,7 +88,7 @@ const route = useRoute()
           Selesai
         </router-link>
       </div>
-      <div class="w-full mx-auto">
+      <div class="w-full mx-auto" v-auto-animate="{ duration: 500 }">
         <RouterView />
       </div>
     </div>

@@ -189,7 +189,10 @@ onMounted(async () => {
                   <p class="w-[600px]">{{ product.deskripsi }}</p>
                 </div>
               </div>
-              <div class="flex flex-col justify-center space-y-4 items-center">
+              <div
+                class="flex flex-col justify-center space-y-4 items-center"
+                v-if="product.stok > 0"
+              >
                 <p class="text-[20px] font-semibold">{{ formatter.format(product.harga) }}</p>
                 <Button
                   v-if="findProductById(product.id) === null"
@@ -212,6 +215,10 @@ onMounted(async () => {
                     +
                   </button>
                 </div>
+                <p>Tersisa : {{ product.stok }}</p>
+              </div>
+              <div class="flex flex-col justify-center space-y-4 items-center mr-12" v-else>
+                <p class="text-xl font-semibold text-red-700">Stok Habis</p>
               </div>
             </div>
           </li>

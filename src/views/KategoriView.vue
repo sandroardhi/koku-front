@@ -23,9 +23,9 @@ onMounted(() => {
 <template>
   <Navbar />
   <div class="w-[80%] mx-auto text-center">
-      <p class="text-5xl mb-3 ">Kategori</p>
+    <p class="text-5xl mb-3">Kategori</p>
   </div>
-  <div class="w-[80%] mx-auto p-4 mb-10 flex justify-center">
+  <div class="w-[80%] mx-auto p-4 mb-10 flex justify-center min-h-screen">
     <div role="status" v-if="isLoading" class="mx-auto w-full flex justify-center items-center">
       <svg
         aria-hidden="true"
@@ -66,10 +66,14 @@ onMounted(() => {
           ></div>
 
           <!-- Overlay with transparent black background -->
-          <div class="absolute inset-0 bg-black opacity-40 group-hover:opacity-75 transition-all ease duration-200 rounded-lg"></div>
+          <div
+            class="absolute inset-0 bg-black opacity-40 group-hover:opacity-75 transition-all ease duration-200 rounded-lg"
+          ></div>
 
           <!-- Kategori name in the middle -->
-          <div class="absolute inset-0 flex items-center justify-center text-white text-xl font-semibold">
+          <div
+            class="absolute inset-0 flex items-center justify-center text-white text-xl font-semibold"
+          >
             {{ kategori.nama }}
           </div>
         </router-link>

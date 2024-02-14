@@ -47,7 +47,7 @@ onMounted(async () => {
 
 <template>
   <Navbar />
-  <div class="w-[80%] mx-auto p-4 mb-10">
+  <div class="w-[80%] min-h-screen mx-auto p-4 mb-10">
     <form class="flex items-center w-[50%] mb-8">
       <label for="simple-search" class="sr-only">Search</label>
       <div class="relative w-full">

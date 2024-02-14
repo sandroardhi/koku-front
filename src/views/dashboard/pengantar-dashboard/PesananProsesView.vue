@@ -68,29 +68,30 @@ const categorizedBarangs = (barangs) => {
   return Object.values(categorizedBarangs)
 }
 
-const tambah_harga_produk = (order) => {
-  let total = 0
+const deadlineKonfirmasi = (created_at) => {
+  const createdAt = new Date(created_at)
 
-  if (Array.isArray(order)) {
-    order.forEach((item) => {
-      total += item.harga * item.kuantitas
-    })
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000
+  const newDate = new Date(createdAt.getTime() + oneDayInMilliseconds)
+
+  // Format the new date as needed
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit'
   }
+  const formattedNewDate = newDate.toLocaleDateString('en-US', options)
 
-  return total
+  return formattedNewDate
 }
 
-const updateStatusDibuat = async (order) => {
+const updateStatusSelesai = async (order_id) => {
   const data = {
-    OrderBarang_id: []
+    order_id: order_id
   }
-  if (Array.isArray(order)) {
-    order.forEach((item) => {
-      data.OrderBarang_id.push(item.id)
-    })
-  }
+
   try {
-    await pengantar_repository.updateStatusDibuat(data)
+    await pengantar_repository.updateStatusSelesai(data)
     await OrderMasuk()
   } catch (error) {
     console.error(error)
@@ -382,55 +383,26 @@ onMounted(async () => {
           <div
             class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"
           >
-            <div
-              class="w-full flex justify-end items-center pt-4 pb-2 mt-1"
-              v-if="order.payment_status == 'pending'"
-            >
-              <button
-                class="focus:outline-none -mt-2 mr-3 text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                @click="hapus(order.id)"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-5 h-5 group"
-                >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <path
-                      d="M10 12L14 16M14 12L10 16M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
-                      stroke="#FFF"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                  </g>
-                </svg>
-              </button>
-              <Button type="yellow" text="Bayar" @click.stop="pay(order)" />
-            </div>
-            <div
-              v-else-if="order.status == 'Konfirmasi Pembeli'"
-              class="w-full flex flex-col items-center mt-1"
-            >
+            <div class="w-full flex flex-col items-center mt-1">
               <form
                 :action="route.path"
-                @submit.prevent="updateStatusUserSelesai(order.id)"
+                @submit.prevent="updateStatusSelesai(order)"
                 class="w-full"
+                v-if="order.status == 'Dikirim'"
               >
                 <button
                   type="submit"
                   class="hover:bg-[#FFB000] w-full hover:text-white rounded-lg text-center py-2 text-xl transition-all duration-150 ease-in"
                 >
-                  Konfirmasi Pesanan
+                  Selesai Kirim
                 </button>
               </form>
-              <p class="text-sm mt-3">
-                Pesanan akan otomatis dikonfirmasi pada
-                {{ deadlineKonfirmasi(order.created_at) }}
-              </p>
+              <div class="text-sm -mt-3" v-if="order.status == 'Konfirmasi Pembeli'">
+                <p class="font-semibold text-green-500">Menunggu Konfirmasi Pembeli</p>
+                <p>
+                  Pesanan akan otomatis dikonfirmasi pada {{ deadlineKonfirmasi(order.created_at) }}
+                </p>
+              </div>
             </div>
           </div>
         </div>

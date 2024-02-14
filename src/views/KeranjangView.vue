@@ -338,7 +338,7 @@ onMounted(async () => {
     </router-link>
     <p class="text-5xl mb-3">Keranjang</p>
   </div>
-  <div class="w-[80%] mx-auto p-4 mb-10 flex justify-center">
+  <div class="w-[80%] mx-auto p-4 mb-10 flex justify-center min-h-screen">
     <div role="status" v-if="isLoading" class="mx-auto w-full flex justify-center items-center">
       <svg
         aria-hidden="true"
