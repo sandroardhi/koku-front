@@ -39,22 +39,22 @@ const router = createRouter({
     {
       path: '/kantin',
       name: 'kantin',
-      component: () => import('../views/KantinListView.vue'),
+      component: () => import('../views/KantinListView.vue')
     },
     {
       path: '/kantin/show/:id',
       name: 'kantin-show',
-      component: () => import('../views/KantinDetailView.vue'),
+      component: () => import('../views/KantinDetailView.vue')
     },
     {
       path: '/kategori',
       name: 'kategori',
-      component: () => import('../views/KategoriView.vue'),
+      component: () => import('../views/KategoriView.vue')
     },
     {
       path: '/kategori/:id',
       name: 'kategori-detail',
-      component: () => import('../views/KategoriDetailView.vue'),
+      component: () => import('../views/KategoriDetailView.vue')
     },
     {
       path: '/tujuan',
@@ -86,8 +86,7 @@ const router = createRouter({
         {
           path: '',
           name: 'pesanan-belum-dibayar',
-          component: () => import('../views/pesanan/PesananBelumDibayarView.vue'),
-          
+          component: () => import('../views/pesanan/PesananBelumDibayarView.vue')
         },
         {
           path: 'berlangsung',
@@ -115,7 +114,7 @@ const router = createRouter({
           component: () => import('../views/dashboard/DashboardIndexView.vue'),
           meta: {
             requireNotUser: true
-          },
+          }
         },
         {
           path: 'store-management',
@@ -196,13 +195,60 @@ const router = createRouter({
           meta: {
             requireAdmin: true
           }
+        },
+        {
+          path: 'payouts',
+          name: 'payouts',
+          component: () =>
+            import('../views/dashboard/admin-dashboard/payouts/PayoutsIndexView.vue'),
+          meta: {
+            requireAdmin: true
+          },
+          children: [
+            {
+              path: '',
+              name: 'payouts-bayar-penjual',
+              component: () =>
+                import('../views/dashboard/admin-dashboard/payouts/PayoutsBayarPenjualView.vue'),
+              meta: {
+                requireAdmin: true
+              }
+            },
+            {
+              path: 'pengantar',
+              name: 'payouts-bayar-pengantar',
+              component: () =>
+                import('../views/dashboard/admin-dashboard/payouts/PayoutsBayarPengantarView.vue'),
+              meta: {
+                requireAdmin: true
+              }
+            },
+            {
+              path: 'refund',
+              name: 'payouts-bayar-refund',
+              component: () =>
+                import('../views/dashboard/admin-dashboard/payouts/PayoutsBayarRefundView.vue'),
+              meta: {
+                requireAdmin: true
+              }
+            },
+            {
+              path: 'selesai',
+              name: 'payouts-selesai',
+              component: () =>
+                import('../views/dashboard/admin-dashboard/payouts/PayoutsSelesaiView.vue'),
+              meta: {
+                requireAdmin: true
+              }
+            }
+          ]
         }
       ]
     },
     {
       path: '/unauthorized',
       name: 'unauthorized',
-      component: () => import('../views/UnauthorizedView.vue'),
+      component: () => import('../views/UnauthorizedView.vue')
     }
   ]
 })
@@ -220,14 +266,13 @@ router.beforeEach((to, from, next) => {
     next('/unauthorized')
   } else if (to.meta.requirePelanggan && authStore.getUserRole !== 'user') {
     if (authStore.isAuthenticated) {
-      next('/unauthorized'); // Redirect if authenticated but not the required role
+      next('/unauthorized') // Redirect if authenticated but not the required role
     } else {
-      next(); // Allow access for users not logged in
+      next() // Allow access for users not logged in
     }
-  }else if (to.meta.requireNotUser && authStore.getUserRole == 'user') {
+  } else if (to.meta.requireNotUser && authStore.getUserRole == 'user') {
     next('/unauthorized')
-  }
-   else {
+  } else {
     // Continue to the route
     next()
   }

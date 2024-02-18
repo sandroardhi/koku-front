@@ -448,10 +448,107 @@ const route = useRoute()
           </template>
         </SidebarList>
         <!-- end of to role-management -->
+
+        <!-- to role-management -->
+        <router-link
+          :to="{ name: 'payouts-bayar-penjual' }"
+          v-if="authStore.getUserRole == 'admin'"
+        >
+          <li
+            class="flex relative items-center hover:bg-gray-200 p-2 rounded-md group mt-4"
+            :class="
+              route.path === '/dashboard/payouts' ||
+              route.path === '/dashboard/payouts/selesai' ||
+              route.path === '/dashboard/payouts/pengantar' ||
+              route.path === '/dashboard/payouts/refund'
+                ? 'bg-gray-200'
+                : ''
+            "
+          >
+            <div
+              :class="
+                route.path === '/dashboard/payouts' ||
+                route.path === '/dashboard/payouts/selesai' ||
+                route.path === '/dashboard/payouts/pengantar' ||
+                route.path === '/dashboard/payouts/refund'
+                  ? 'absolute w-1 h-full bg-yellow-300 -right-[0.75rem] rounded-l-2xl'
+                  : ''
+              "
+            ></div>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-8 group"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+              <g id="SVGRepo_iconCarrier">
+                <path
+                  d="M3 8C3 6.34315 4.34315 5 6 5H18C19.6569 5 21 6.34315 21 8V16C21 17.6569 19.6569 19 18 19H6C4.34315 19 3 17.6569 3 16V8Z"
+                  stroke="#9CA3AF"
+                  stroke-width="2"
+                  class="group-hover:stroke-black"
+                  :class="
+                    route.path === '/dashboard/payouts' ||
+                    route.path === '/dashboard/payouts/selesai' ||
+                    route.path === '/dashboard/payouts/pengantar' ||
+                    route.path === '/dashboard/payouts/refund'
+                      ? 'stroke-black'
+                      : ''
+                  "
+                ></path>
+                <path
+                  d="M3 10H21"
+                  stroke="#9CA3AF"
+                  stroke-width="2"
+                  class="group-hover:stroke-black"
+                  :class="
+                    route.path === '/dashboard/payouts' ||
+                    route.path === '/dashboard/payouts/selesai' ||
+                    route.path === '/dashboard/payouts/pengantar' ||
+                    route.path === '/dashboard/payouts/refund'
+                      ? 'stroke-black'
+                      : ''
+                  "
+                ></path>
+                <path
+                  d="M14 15L17 15"
+                  stroke="#9CA3AF"
+                  stroke-width="2"
+                  class="group-hover:stroke-black"
+                  stroke-linecap="round"
+                  :class="
+                    route.path === '/dashboard/payouts' ||
+                    route.path === '/dashboard/payouts/selesai' ||
+                    route.path === '/dashboard/payouts/pengantar' ||
+                    route.path === '/dashboard/payouts/refund'
+                      ? 'stroke-black'
+                      : ''
+                  "
+                ></path>
+              </g>
+            </svg>
+            <span
+              class="ml-2 text-md font-semibold text-[#1f2836] group-hover:text-black transition-all duration-150 font-sans"
+              :class="
+                route.path === '/dashboard/payouts' ||
+                '/dashboard/payouts/selesai' ||
+                '/dashboard/payouts/pengantar' ||
+                '/dashboard/payouts/refund'
+                  ? 'text-black'
+                  : ''
+              "
+            >
+              Payouts
+            </span>
+          </li></router-link
+        >
+        <!-- end of to role-management -->
       </ul>
     </aside>
 
-    <div class="col-span-10 bg-[#F4F4F8]"  v-auto-animate="{ duration: 500 }">
+    <div class="col-span-10 bg-[#F4F4F8]" v-auto-animate="{ duration: 500 }">
       <RouterView />
     </div>
   </div>

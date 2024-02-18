@@ -2,10 +2,14 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import PenjualIndexComponent from '../../components/dashboard/penjual/PenjualIndexComponent.vue'
+import PengantarIndexComponent from '../../components/dashboard/pengantar/PengantarIndexComponent.vue'
+import AdminIndexComponent from '../../components/dashboard/admin/AdminIndexComponent.vue'
 
 const authStore = useAuthStore()
 
 const user = JSON.parse(localStorage.getItem('user'))
+const role = localStorage.getItem('role')
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref()
@@ -61,14 +65,14 @@ onMounted(() => {
         </div>
         <div v-else @click="dropdownToggle" class="cursor-pointer relative">
           <p class="font-semibold">Hello, {{ user.name }}</p>
-          <ul class="absolute w-full left-0 top-11 border bg-white rounded-lg">
+          <ul class="absolute w-full left-0 top-11 border bg-white rounded-lg z-10">
             <li class="p-2 text-black" @click="logout">Logout</li>
           </ul>
         </div>
       </div>
     </div>
 
-    <div class="">
+    <div class="w-full">
       <div
         role="status"
         v-if="isLoading"
@@ -92,7 +96,11 @@ onMounted(() => {
         </svg>
         <span class="sr-only">Loading...</span>
       </div>
-      <div class="w-full px-10 py-5 min-h-[200px]" v-else>Hello dashboard</div>
+      <div class="w-full py-5" v-else>
+        <AdminIndexComponent v-if="role == 'admin'" />
+        <PengantarIndexComponent v-else-if="role == 'pengantar'" />
+        <PenjualIndexComponent v-else-if="role == 'penjual'" />
+      </div>
     </div>
   </div>
 </template>

@@ -9,3 +9,4 @@ export * from "./useProdukRepository";
 export * from "./usePengantarRepository";
 export * from "./useRoleRepository";
 export * from "./useOrderRepository";
+export * from "./useDashboardRepository";

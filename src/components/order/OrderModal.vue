@@ -163,11 +163,6 @@ const toggleModal = (orderId) => {
   if (modal) {
     modal.classList.toggle('hidden')
   }
-  if (modal) {
-    document.body.classList.toggle('overflow-y-hidden')
-  } else {
-    document.body.classList.add('overflow-y-hidden')
-  }
 }
 
 onMounted(async () => {
@@ -303,9 +298,11 @@ onMounted(async () => {
       <div class="w-full border-t-2 py-5" v-else></div>
     </div>
     <!-- modal -->
+    <div v-if="modal" class="fixed inset-0 bg-black opacity-50"></div>
+
     <div
       :id="'modal_' + order.id"
-      class="hidden bg-[rgba(0,0,0,0.5)] overflow-y-auto bg-overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 min-h-[calc(100%)]"
+      class="hidden bg-[rgba(0,0,0,0.5)] overflow-y-auto bg-overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 min-h-[calc(100%)] transition-all duration-300"
     >
       <div class="relative p-4 w-full max-w-xl mx-auto my-5">
         <!-- Modal content -->

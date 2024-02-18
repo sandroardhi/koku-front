@@ -5,12 +5,6 @@ const modal = ref(false)
 const modalToggle = (toggleModal) => {
   modal.value = !modal.value
 
-  if (modal.value) {
-    document.body.classList.add('overflow-y-hidden')
-  } else {
-    document.body.classList.remove('overflow-y-hidden')
-  }
-
   if (toggleModal) {
     toggleModal()
   }
@@ -20,7 +14,23 @@ defineProps({
   buttonText: String,
   modalTitle: String,
   buttonWidth: String,
-  toggleModal: Function
+  toggleModal: Function,
+  buttonColor: {
+    type: String,
+    default: '#FFB000'
+  },
+  buttonHover: {
+    type: String,
+    default: '#ffae00bd'
+  },
+  buttonMarginRight: {
+    type: Number,
+    default: 0
+  },
+  maxWidthModal: {
+    type: String,
+    default: 'md'
+  }
 })
 </script>
 
@@ -28,7 +38,7 @@ defineProps({
   <!-- Modal toggle -->
   <button
     @click="modalToggle(toggleModal)"
-    :class="`w-[${buttonWidth}%]  text-white bg-[#FFB000] hover:bg-[#ffae00bd] focus:ring-2 focus:outline-none focus:ring-[#ffae00bd] font-medium rounded-lg px-5 py-2.5 text-center`"
+    :class="`w-[${buttonWidth}%]  text-white bg-[${buttonColor}] hover:bg-[${buttonHover}] mr-[${buttonMarginRight}px] focus:ring-2 focus:outline-none focus:ring-[${buttonHover}] font-medium rounded-lg px-5 py-2.5 text-center`"
     type="button"
   >
     {{ buttonText }}
@@ -39,7 +49,7 @@ defineProps({
     :class="modal ? 'block bg-[rgba(0,0,0,0.5)] h-screen' : 'hidden'"
     class="overflow-y-auto bg-overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
   >
-    <div class="relative p-4 w-full max-w-md mx-auto my-5">
+    <div :class="`relative p-4 w-full max-w-${maxWidthModal} mx-auto my-5`">
       <!-- Modal content -->
       <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
         <!-- Modal header -->

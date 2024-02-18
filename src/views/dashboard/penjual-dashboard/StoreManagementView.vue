@@ -159,7 +159,7 @@ const onSubmitProduk = async () => {
   // Loop produk_array
   produk_array.forEach((product, index) => {
     // Append setiap produk properti nak formdata mbek unique key (index loop e), btw products nak kene sembarang yo iku jeneng
-    // btw products nak kene sembarang yo iku jeneng, jeneng e bakal digae nak backend engkok . products soale lek produks elek wkakak
+    // btw products nak kene sembarang yo iku jeneng, jeneng e bakal digae nak backend engkok. products soale lek produks elek wkakak
     formdata.append(`products[${index}][nama]`, product.nama)
     formdata.append(`products[${index}][harga]`, product.harga)
     formdata.append(`products[${index}][stok]`, product.stok)

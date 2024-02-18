@@ -235,7 +235,10 @@ onMounted(async () => {
               Selesai
             </button>
           </form>
-          <div v-if="order[0].order.status == 'Dikirim'" class="w-full">
+          <div v-if="order[0].status == 'Gagal Dibuat'" class="w-full">
+            <p class="text-center text-red-800 text-lg font-semibold mt-3">Pesanan Gagal</p>
+          </div>
+          <div v-if="order[0].order.status == 'Dikirim' && order[0].status !== 'Gagal Dibuat'" class="w-full">
             <p class="text-center text-green-800 text-lg font-semibold mt-3">Sedang Dikirim</p>
           </div>
           <div v-else-if="order[0].order.status == 'Konfirmasi Pembeli'" class="text-sm mt-3">

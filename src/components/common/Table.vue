@@ -69,11 +69,14 @@ const formatter = new Intl.NumberFormat('id-ID', {
           <template v-else-if="label.field === 'harga'">
             {{ formatter.format(item.harga) }}
           </template>
+          <template v-else-if="label.field === 'ongkir'">
+            {{ formatter.format(item.ongkir) }}
+          </template>
           <template v-else>
             <Excerpt :parentText="item[label.field]" :maxLength="excerptLength" />
           </template>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap" v-if="actionButtons">
+        <td class="px-6 py-4" v-if="actionButtons">
           <Button
             v-for="button in actionButtons"
             :key="button.id"
@@ -81,6 +84,7 @@ const formatter = new Intl.NumberFormat('id-ID', {
             :type="button.type"
             :text="button.text"
           />
+          <slot name="customButton2" v-bind:item="item" />
           <slot name="customButton" v-bind:item="item" />
         </td>
       </tr>

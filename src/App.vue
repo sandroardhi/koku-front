@@ -54,8 +54,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="box-border relative antialiased bg-white" >
-    <RouterView :key="route.fullPath"/>
+  <div class="box-border relative antialiased bg-white">
+    <RouterView :key="route.fullPath" />
     <router-link
       to="/keranjang"
       v-if="
