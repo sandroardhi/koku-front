@@ -8,12 +8,20 @@ export const useDashboardRepository = () => {
 
   const uangMasukAdminPengantar = () => http.get('/api/admin/uang-pengantar')
 
+  const uangMasukAdminRefund = () => http.get('/api/admin/uang-refund')
+
   const uangMasukSelesaiAdmin = () => http.get('/api/admin/uang-selesai')
 
   const bayarPenjual = (data) => http.post('/api/admin/bayar-penjual', data)
 
   const bayarPengantar = (data) => http.post('/api/admin/bayar-pengantar', data)
+
+  const bayarRefund = (data) => http.post('/api/admin/bayar-refund', data)
   // END OF ADMIN
+
+  // PEMBELI
+  const uangRefundPembeli = () => http.get('/api/order/uang-refund')
+  // END OF PEMBELI
 
   // PENJUAL
   const uangMasukPenjual = () => http.get('/api/order-penjual/uang-masuk')
@@ -27,8 +35,11 @@ export const useDashboardRepository = () => {
     uangMasukAdminPenjual,
     uangMasukAdminPengantar,
     uangMasukSelesaiAdmin,
+    uangMasukAdminRefund,
     bayarPenjual,
     bayarPengantar,
+    bayarRefund,
+    uangRefundPembeli,
     uangMasukPenjual,
     uangMasukPengantar
   }

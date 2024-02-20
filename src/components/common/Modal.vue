@@ -15,17 +15,9 @@ defineProps({
   modalTitle: String,
   buttonWidth: String,
   toggleModal: Function,
-  buttonColor: {
+  buttonType: {
     type: String,
-    default: '#FFB000'
-  },
-  buttonHover: {
-    type: String,
-    default: '#ffae00bd'
-  },
-  buttonMarginRight: {
-    type: Number,
-    default: 0
+    default: 'Yellow'
   },
   maxWidthModal: {
     type: String,
@@ -37,8 +29,17 @@ defineProps({
 <template>
   <!-- Modal toggle -->
   <button
+    v-if="buttonType == 'Yellow'"
     @click="modalToggle(toggleModal)"
-    :class="`w-[${buttonWidth}%]  text-white bg-[${buttonColor}] hover:bg-[${buttonHover}] mr-[${buttonMarginRight}px] focus:ring-2 focus:outline-none focus:ring-[${buttonHover}] font-medium rounded-lg px-5 py-2.5 text-center`"
+    :class="`text-white bg-[#FFB000] hover:bg-[#ffae00bd] mr-[10px] focus:ring-2 focus:outline-none focus:ring-[#ffae00bd] font-medium rounded-lg px-5 py-2.5 text-center`"
+    type="button"
+  >
+    {{ buttonText }}
+  </button>
+  <button
+    v-else-if="buttonType == 'Blue'"
+    @click="modalToggle(toggleModal)"
+    :class="`text-white bg-[#0000FF] hover:bg-[#7575FF] mr-[10px] focus:ring-2 focus:outline-none focus:ring-[#7575FF] font-medium rounded-lg px-5 py-2.5 text-center`"
     type="button"
   >
     {{ buttonText }}

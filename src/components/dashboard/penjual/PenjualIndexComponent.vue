@@ -46,6 +46,15 @@ const toggleModal = (orderId) => {
   }
 }
 
+const stringDate = (updated_at) => {
+  const updatedAtDate = new Date(updated_at)
+
+  // Format the date as desired
+  const formattedDate = updatedAtDate.toLocaleString() // Adjust this according to your desired format
+
+  return formattedDate
+}
+
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR'
@@ -169,7 +178,7 @@ onMounted(async () => {
             <div class="flex w-1/2 justify-between">
               <p class="text-gray-600">#{{ order.orders[0].order.unique_string }}</p>
               <p>{{ formatter.format(order.totalHarga) }}</p>
-              <p>{{ order.orders[0].created_at }}</p>
+              <p>{{ stringDate(order.orders[0].updated_at) }}</p>
             </div>
             <div class="flex w-1/2 justify-end">
               <p v-if="order.orders[0].status_uang == 'Sukses'">Sedang diproses oleh admin</p>

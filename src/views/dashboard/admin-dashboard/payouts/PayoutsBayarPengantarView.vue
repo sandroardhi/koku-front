@@ -117,7 +117,7 @@ const addHarga = (orders) => {
         pengantar_id: pengantarId,
         created_at: uang.created_at,
         orders: [],
-        order_id: [],
+        order_id: []
       }
     }
     kantinMap[pengantarId].orders.push({
@@ -184,9 +184,7 @@ onMounted(async () => {
           <Modal
             buttonText="Details"
             modalTitle="Detail Order"
-            :button-color="'#0000FF'"
-            :button-hover="'#7575FF'"
-            :button-margin-right="10"
+            :button-type="'Blue'"
             :max-width-modal="'xl'"
           >
             <template #modalBody>

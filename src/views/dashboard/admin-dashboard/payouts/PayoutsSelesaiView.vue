@@ -13,7 +13,7 @@ const fetchUangMasuk = async () => {
   isLoading.value = true
   try {
     const { data } = await dashboard_repository.uangMasukSelesaiAdmin()
-    orders.value = data.uang_selesai
+    orders.value = data
   } catch (error) {
     console.log(error)
   } finally {
@@ -23,59 +23,107 @@ const fetchUangMasuk = async () => {
 
 const groupedOrders = ref([])
 
-const groupedOrder = () => {
-  console.log(orders.value)
-  const kantinMap = {}
+const groupOrders = () => {
+  const orderMap = {}
 
-  orders.value.forEach((nestedArray) => {
-    nestedArray.forEach((uang) => {
-      const kantinId = uang.kantin_id
-      if (!kantinMap[kantinId]) {
-        kantinMap[kantinId] = {
+  // Iterate over the uang_selesai data
+  orders.value.uang_selesai.forEach((order) => {
+    order.forEach((uang) => {
+      // console.log('uang_selesai', order)
+      const kantinId = `${uang.kantin.id}-kantin`
+      if (!orderMap[kantinId]) {
+        orderMap[kantinId] = {
           harga: 0,
+          unique_id: kantinId,
           nama: uang.kantin.nama,
-          orders: []
+          orders: [],
+          tipe: 'Bayar Kantin'
         }
       }
-      kantinMap[kantinId].harga += uang.harga
-      kantinMap[kantinId].nama = uang.kantin.nama
-      kantinMap[kantinId].orders.push(uang)
+      orderMap[kantinId].harga += uang.harga
+      orderMap[kantinId].orders.push(uang)
+    })
+  })
+
+  // Iterate over the uang_ongkir_selesai data
+  orders.value.uang_ongkir_selesai.forEach((orders) => {
+    orders.forEach((order) => {
+      const pengantarId = `${order.pengantar_id}-pengantar`
+      if (!orderMap[pengantarId]) {
+        orderMap[pengantarId] = {
+          harga: 0,
+          nama: order.pengantar.name,
+          unique_id: pengantarId,
+          orders: [],
+          tipe: 'Bayar Pengantar'
+        }
+      }
+      orderMap[pengantarId].harga += order.ongkir
+      orderMap[pengantarId].orders.push(order)
+    })
+  })
+
+  // Iterate over the uang_refund data
+  orders.value.uang_refunded.forEach((orders) => {
+    orders.forEach((order) => {
+      // console.log('uang_refund', order.harga)
+      const userId = `${order.order.user_id}-refund`
+      if (!orderMap[userId]) {
+        orderMap[userId] = {
+          harga: 0,
+          unique_id: userId,
+          nama: order.order.user.name,
+          orders: [],
+          tipe: 'Bayar Refund'
+        }
+      }
+      orderMap[userId].harga += order.harga // Assuming order has a total_harga property
+      orderMap[userId].orders.push(order)
     })
   })
 
   // Convert grouped orders back to array format
-  groupedOrders.value = Object.values(kantinMap)
+  groupedOrders.value = Object.values(orderMap)
 }
 
 const addHarga = (orders) => {
-  const kantinMap = {}
+  const orderMap = {}
+  // console.log(orders)
+  const uniqueId = orders.unique_id // Assuming 'unique_id' is the unique identifier for each order
+  const updatedAt = orders.updated_at // Assuming 'updated_at' is the timestamp for when the order was updated
 
-  orders?.forEach((uang) => {
-    const kantinId = uang.kantin_id
-    const uniqueString = uang.order.unique_string
-    if (!kantinMap[kantinId]) {
-      kantinMap[kantinId] = {
-        kantin_id: kantinId,
-        created_at: uang.order.created_at,
-        orders: []
-      }
+  // Check if the orderMap already contains the unique identifier
+  if (!orderMap[uniqueId]) {
+    // If not, initialize the orderMap entry with an empty array for 'orders'
+    orderMap[uniqueId] = {
+      unique_id: uniqueId,
+      updated_at: updatedAt,
+      orders: []
     }
-    const existingOrder = kantinMap[kantinId].orders.find(
+  }
+
+  // Iterate over each order within the current 'orders' object
+  orders.orders.forEach((individualOrder) => {
+    const uniqueString = individualOrder.unique_string || individualOrder.order.unique_string
+    const existingOrderIndex = orderMap[uniqueId].orders.findIndex(
       (order) => order.unique_string === uniqueString
     )
-    if (existingOrder) {
-      existingOrder.totalHarga += uang.harga
+
+    if (existingOrderIndex !== -1) {
+      // If the order already exists in the 'orders' array, update its total price
+      orderMap[uniqueId].orders[existingOrderIndex].totalHarga += individualOrder.harga
     } else {
-      kantinMap[kantinId].orders.push({
+      // If the order does not exist, add it to the 'orders' array
+      orderMap[uniqueId].orders.push({
         unique_string: uniqueString,
-        created_at: uang.order.created_at,
-        totalHarga: uang.harga
+        created_at: individualOrder.created_at,
+        totalHarga: individualOrder.harga || individualOrder.ongkir
       })
     }
   })
 
-  // Convert grouped orders back to array format
-  return Object.values(kantinMap)
+  // Convert orderMap to an array of values
+  return Object.values(orderMap)
 }
 
 const labels = [
@@ -90,7 +138,7 @@ const formatter = new Intl.NumberFormat('id-ID', {
 
 onMounted(async () => {
   await fetchUangMasuk()
-  groupedOrder()
+  groupOrders()
   // addHarga()
   // console.log(addedHarga.value)
 })
@@ -131,14 +179,12 @@ onMounted(async () => {
           <Modal
             buttonText="Details"
             modalTitle="Detail Order"
-            :button-color="'#0000FF'"
-            :button-hover="'#7575FF'"
-            :button-margin-right="10"
+            :button-type="'Blue'"
             :max-width-modal="'xl'"
           >
             <template #modalBody>
               <div class="grid gap-4 mb-4 grid-cols-2">
-                <div class="col-span-2" v-for="item in addHarga(item.orders)" :key="item.id">
+                <div class="col-span-2" v-for="item in addHarga(item)" :key="item.id">
                   <table class="min-w-full divide-y divide-gray-200 mt-2 -mb-3">
                     <thead>
                       <tr>

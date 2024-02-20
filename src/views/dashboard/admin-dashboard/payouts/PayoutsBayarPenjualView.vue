@@ -191,9 +191,7 @@ onMounted(async () => {
           <Modal
             buttonText="Details"
             modalTitle="Detail Order"
-            :button-color="'#0000FF'"
-            :button-hover="'#7575FF'"
-            :button-margin-right="10"
+            :button-type="'Blue'"
             :max-width-modal="'xl'"
           >
             <template #modalBody>

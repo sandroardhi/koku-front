@@ -33,7 +33,7 @@ const route = useRoute()
         >
         <router-link
           to="/dashboard/payouts/selesai"
-          class="inline-block w-[180px] p-2 font-medium rounded-t-lg shadow-top bg-white"
+          class="inline-block w-[180px] p-2 font-medium rounded-t-lg shadow-top"
           :class="
             route.path == '/dashboard/payouts/selesai' ? 'bg-[#FACA15] text-white' : 'bg-white'
           "

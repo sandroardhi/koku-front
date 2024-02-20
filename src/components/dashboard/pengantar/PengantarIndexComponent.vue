@@ -46,6 +46,15 @@ const toggleModal = (orderId) => {
   }
 }
 
+const stringDate = (updated_at) => {
+  const updatedAtDate = new Date(updated_at)
+
+  // Format the date as desired
+  const formattedDate = updatedAtDate.toLocaleString() // Adjust this according to your desired format
+
+  return formattedDate
+}
+
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR'
@@ -169,12 +178,15 @@ onMounted(async () => {
             <div class="flex w-1/2 justify-between">
               <p class="text-gray-600">#{{ order.orders[0].unique_string }}</p>
               <p>{{ formatter.format(order.orders[0].ongkir) }}</p>
-              <p>{{ order.orders[0].created_at }}</p>
+              <p>{{ stringDate(order.orders[0].updated_at) }}</p>
             </div>
             <div class="flex w-1/2 justify-end">
               <p v-if="order.orders[0].status_ongkir == 'Sukses'">Sedang diproses oleh admin</p>
               <div v-else-if="order.orders[0].status_ongkir == 'Selesai'">
-                <div class="w-full flex justify-center" v-if="order.orders[0].tipe_pembayaran == 'Online'">
+                <div
+                  class="w-full flex justify-center"
+                  v-if="order.orders[0].tipe_pembayaran == 'Online'"
+                >
                   <p class="text-green-600 font-semibold">
                     Sudah dibayar<span class="mx-5">|</span>
                   </p>

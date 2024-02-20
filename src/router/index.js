@@ -66,6 +66,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/refund',
+      name: 'refund',
+      component: () => import('../views/RefundView.vue'),
+      meta: {
+        requireAuth: true,
+        requirePelanggan: true
+      }
+    },
+    {
       path: '/keranjang',
       name: 'keranjang',
       component: () => import('../views/KeranjangView.vue'),

@@ -374,7 +374,7 @@ onMounted(async () => {
               </div>
             </div>
             <div
-              v-for="(categorizedOrder, index) in categorizedBarangs(order.order_barangs)"
+              v-for="categorizedOrder in categorizedBarangs(order.order_barangs)"
               :key="categorizedOrder.id"
               class="w-full"
               :class="categorizedOrder.produkList[0].status == 'Canceled' ? 'text-gray-500' : ''"
@@ -420,7 +420,7 @@ onMounted(async () => {
                 class="flex flex-col items-center text-black"
               >
                 <p class="text-red-600 text-lg font-semibold text-center mt-2">
-                  Pesanan gagal karena penjual tidak merespon
+                  Pesanan gagal karena penjual tidak merespon. Untuk mengurus refund, <a href="/refund" class="text-blue-500">klik disini</a>
                 </p>
               </div>
               <p

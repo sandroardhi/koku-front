@@ -14,10 +14,10 @@ const isLoadingSubmit = ref(false)
 
 const orders = ref([])
 
-const fetchUangMasuk = async () => {
+const fetchUangRefund = async () => {
   isLoading.value = true
   try {
-    const { data } = await dashboard_repository.uangMasukAdmin()
+    const { data } = await dashboard_repository.uangMasukAdminRefund()
     orders.value = data.uang_masuk
   } catch (error) {
     console.log(error)
@@ -63,7 +63,7 @@ const onSubmit = async () => {
   // }
 
   try {
-    await dashboard_repository.bayarPenjual(formdata)
+    await dashboard_repository.bayarRefund(formdata)
 
     router.go()
   } catch (e) {
@@ -80,27 +80,26 @@ const groupedOrder = () => {
   console.log(orders.value)
   orders.value.forEach((uang) => {
     console.log('uang belum dibayar', uang)
-    const kantin_id = uang.kantin_id
+    const user_id = uang.order.user_id
     const orderbarang_id = uang.id
-    if (!ordersMap[kantin_id]) {
-      ordersMap[kantin_id] = {
+    if (!ordersMap[user_id]) {
+      ordersMap[user_id] = {
         harga: 0,
-        nama: uang.kantin.nama,
-        kantin_id: kantin_id,
+        nama: uang.order.user.name,
         orders: [],
         orderbarang_id: [],
-        no_rek: uang.kantin.penjual.no_rek,
-        channel: uang.kantin.penjual.channel
+        no_rek: uang.order.user.no_rek,
+        channel: uang.order.user.channel
       }
     }
 
-    ordersMap[kantin_id].orderbarang_id.push(orderbarang_id)
-    ordersMap[kantin_id].harga += uang.harga
-    ordersMap[kantin_id].nama = uang.kantin.nama
-    ordersMap[kantin_id].no_rek = uang.kantin.penjual.no_rek
-    ordersMap[kantin_id].channel = uang.kantin.penjual.channel
-    ordersMap[kantin_id].kantin_id = kantin_id
-    ordersMap[kantin_id].orders.push(uang)
+    ordersMap[user_id].orderbarang_id.push(orderbarang_id)
+    ordersMap[user_id].harga += uang.harga
+    ordersMap[user_id].nama = uang.order.user.name
+    ordersMap[user_id].no_rek = uang.order.user.no_rek
+    ordersMap[user_id].channel = uang.order.user.channel
+    ordersMap[user_id].user_id = user_id
+    ordersMap[user_id].orders.push(uang)
   })
 
   // Convert grouped orders back to array format
@@ -139,7 +138,7 @@ const addHarga = (orders) => {
 }
 
 const labels = [
-  { id: 1, text: 'Nama Kantin', field: 'nama' },
+  { id: 1, text: 'Nama User', field: 'nama' },
   { id: 2, text: 'Total pembayaran', field: 'harga' }
 ]
 
@@ -149,7 +148,7 @@ const formatter = new Intl.NumberFormat('id-ID', {
 })
 
 onMounted(async () => {
-  await fetchUangMasuk()
+  await fetchUangRefund()
   groupedOrder()
   // addHarga()
   // console.log(addedHarga.value)
@@ -191,9 +190,7 @@ onMounted(async () => {
           <Modal
             buttonText="Details"
             modalTitle="Detail Order"
-            :button-color="'#0000FF'"
-            :button-hover="'#7575FF'"
-            :button-margin-right="10"
+            :button-type="'Blue'"
             :max-width-modal="'xl'"
           >
             <template #modalBody>
