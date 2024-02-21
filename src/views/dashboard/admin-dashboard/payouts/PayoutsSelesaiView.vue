@@ -128,7 +128,8 @@ const addHarga = (orders) => {
 
 const labels = [
   { id: 1, text: 'Nama Kantin', field: 'nama' },
-  { id: 2, text: 'Total pembayaran', field: 'harga' }
+  { id: 2, text: 'Total pembayaran', field: 'harga' },
+  { id: 2, text: 'Tipe', field: 'tipe' }
 ]
 
 const formatter = new Intl.NumberFormat('id-ID', {

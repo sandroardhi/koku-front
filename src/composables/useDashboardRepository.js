@@ -12,6 +12,8 @@ export const useDashboardRepository = () => {
 
   const uangMasukSelesaiAdmin = () => http.get('/api/admin/uang-selesai')
 
+  const dashboardAdmin = () => http.get('/api/admin/dashboard')
+
   const bayarPenjual = (data) => http.post('/api/admin/bayar-penjual', data)
 
   const bayarPengantar = (data) => http.post('/api/admin/bayar-pengantar', data)
@@ -36,6 +38,7 @@ export const useDashboardRepository = () => {
     uangMasukAdminPengantar,
     uangMasukSelesaiAdmin,
     uangMasukAdminRefund,
+    dashboardAdmin,
     bayarPenjual,
     bayarPengantar,
     bayarRefund,
