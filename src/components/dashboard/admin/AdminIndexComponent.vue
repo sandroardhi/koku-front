@@ -163,7 +163,8 @@ const labels = [
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 
 const stringDate = (updated_at) => {
@@ -244,7 +245,10 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">Rp.</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>
+          {{ formatter.format(uang_dashboard.bayarPenjual) }}
+        </p>
         <p class="text-xl mt-3">harus dibayar ke penjual hari ini</p>
       </div>
       <div class="col-span-1 bg-white rounded-lg shadow-lg relative p-5 overflow-hidden">
@@ -278,7 +282,10 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">Rp.</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>
+          {{ formatter.format(uang_dashboard.bayarPengantar) }}
+        </p>
         <p class="text-xl mt-3">harus dibayar ke pengantar hari ini</p>
       </div>
       <div class="col-span-1 bg-white rounded-lg shadow-lg relative p-5 overflow-hidden">
@@ -300,7 +307,10 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">Rp.</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>
+          {{ formatter.format(uang_dashboard.bayarRefund) }}
+        </p>
         <p class="text-xl mt-3">harus direfund ke user hari ini</p>
       </div>
     </div>

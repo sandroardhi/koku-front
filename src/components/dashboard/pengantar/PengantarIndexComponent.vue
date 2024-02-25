@@ -13,8 +13,22 @@ const dashboard_repository = useDashboardRepository()
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref(false)
+const isLoadingDashboard = ref(false)
 const orders = ref([])
+const uang_dashboard = ref({})
 const user = JSON.parse(localStorage.getItem('user'))
+
+const pengantarDashboard = async () => {
+  isLoadingDashboard.value = true
+  try {
+    const { data } = await dashboard_repository.dashboardPengantar()
+    uang_dashboard.value = data
+  } catch (error) {
+    console.log(error)
+  } finally {
+    isLoadingDashboard.value = false
+  }
+}
 
 const togglePengantarActive = async () => {
   try {
@@ -118,7 +132,8 @@ const stringDate = (updated_at) => {
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 
 const addTotalHarga = (orders) => {
@@ -132,6 +147,7 @@ const addTotalHarga = (orders) => {
 }
 
 onMounted(async () => {
+  pengantarDashboard()
   await fetchUangMasuk()
   groupedOrder()
   authStore.getUser()
@@ -159,7 +175,10 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">Rp.</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>
+          {{ formatter.format(uang_dashboard.uangMasuk) }}
+        </p>
         <p class="text-xl mt-3">didapat hari ini</p>
       </div>
       <div class="col-span-1 bg-white rounded-lg shadow-lg relative p-5 overflow-hidden">
@@ -193,7 +212,8 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">melakukan</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>{{ uang_dashboard.mengantarOrder }}</p>
         <p class="text-xl mt-3">pengantaran hari ini</p>
       </div>
       <div class="col-span-1 bg-white rounded-lg shadow-lg relative p-5 overflow-hidden">
@@ -255,7 +275,8 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">mengantar</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>{{ uang_dashboard.mengantarProduk }}</p>
         <p class="text-xl mt-3">produk hari ini</p>
       </div>
     </div>

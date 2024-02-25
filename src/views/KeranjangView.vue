@@ -291,7 +291,8 @@ watch(
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 function isObjectNotEmpty(obj) {
   for (let key in obj) {
@@ -448,7 +449,7 @@ onMounted(async () => {
               <div class="relative w-48 mb-2">
                 <div
                   @click="toggleDropdownTipePengiriman"
-                  class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 cursor-pointer"
+                  class="w-full px-3 py-2 border border-gray-300 bg-blue-200 rounded focus:outline-none focus:border-blue-500 cursor-pointer"
                 >
                   {{ selectedPengiriman ? selectedPengiriman : 'Pilih tipe pengiriman' }}
                 </div>
@@ -561,7 +562,7 @@ onMounted(async () => {
             <div class="relative w-48 mb-2">
               <div
                 @click="toggleDropdownTipePembayaran"
-                class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 cursor-pointer"
+                class="w-full px-3 py-2 border bg-blue-200 border-gray-300 rounded focus:outline-none focus:border-blue-500 cursor-pointer"
               >
                 {{ selectedPembayaran ? selectedPembayaran : 'Pilih tipe Pembayaran' }}
               </div>

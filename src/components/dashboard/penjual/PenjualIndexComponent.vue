@@ -8,7 +8,21 @@ import 'flatpickr/dist/flatpickr.css'
 
 const dashboard_repository = useDashboardRepository()
 const isLoading = ref(false)
+const isLoadingDashboard = ref(false)
 const orders = ref([])
+const uang_dashboard = ref({})
+
+const penjualDashboard = async () => {
+  isLoadingDashboard.value = true
+  try {
+    const { data } = await dashboard_repository.dashboardPenjual()
+    uang_dashboard.value = data
+  } catch (error) {
+    console.log(error)
+  } finally {
+    isLoadingDashboard.value = false
+  }
+}
 
 const fetchUangMasuk = async () => {
   isLoading.value = true
@@ -27,11 +41,13 @@ const groupedOrder = () => {
   const ordersMap = {}
 
   orders.value.forEach((uang) => {
+    console.log(uang)
     const uniqueString = uang.order.unique_string
     if (!ordersMap[uniqueString]) {
       ordersMap[uniqueString] = {
         totalHarga: 0,
-        orders: []
+        orders: [],
+        status_uang: uang.status_uang
       }
     }
     ordersMap[uniqueString].totalHarga += uang.harga
@@ -61,7 +77,8 @@ const stringDate = (updated_at) => {
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 const testHtml = ref(null)
 
@@ -102,46 +119,28 @@ const addTotalHarga = (orders) => {
   return totalHarga
 }
 
-const selectedDate = ref('')
-const selectedMonth = ref('')
-const selectedYear = ref('')
+const selectedStatus = ref('Filter PDF')
+const dropdownStatus = ref(false)
 
-const flatpickrConfig = {
-  dateFormat: 'Y-m-d' // Specify the date format
+const toggleDropdownStatus = () => {
+  dropdownStatus.value = !dropdownStatus.value
 }
 
-const filteredAndSortedOrders = computed(() => {
-  // Filter and sort orders
-  console.log('outer selectedDate', selectedDate.value)
-  return groupedOrders.value.filter((order) => {
-    const orderDate = new Date(order.orders[0].created_at) // Assuming date property in groupedOrders
+const selectStatus = (option) => {
+  selectedStatus.value = option
+  dropdownStatus.value = false
+}
 
-    // Filter by selected date
-    if (selectedDate.value && orderDate.toISOString().substring(0, 10) !== selectedDate.value) {
-      return false
-    }
-    console.log('selecteddate', selectedDate.value)
-    console.log('iso', orderDate.toISOString().substring(0, 10))
+const filteredOrderSelesai = computed(() => {
+  return groupedOrders.value.filter((order) => order.status_uang === 'Selesai')
+})
 
-    // Filter by selected month
-    if (selectedMonth.value && orderDate.getMonth() + 1 !== parseInt(selectedMonth.value)) {
-      return false
-    }
-
-    // Filter by selected year
-    if (selectedYear.value && orderDate.getFullYear() !== parseInt(selectedYear.value)) {
-      return false
-    }
-
-    return true
-  })
-  // .sort((a, b) => {
-  //   // Sort filtered orders by date
-  //   return new Date(b.date) - new Date(a.date) // Assuming date property in orders
-  // })
+const filteredOrderBelumDibayar = computed(() => {
+  return groupedOrders.value.filter((order) => order.status_uang === 'Sukses')
 })
 
 onMounted(async () => {
+  penjualDashboard()
   await fetchUangMasuk()
   groupedOrder()
 })
@@ -168,7 +167,10 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">Rp.</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>
+          {{ formatter.format(uang_dashboard.uangMasuk) }}
+        </p>
         <p class="text-xl mt-3">didapat hari ini</p>
       </div>
       <div class="col-span-1 bg-white rounded-lg shadow-lg relative p-5 overflow-hidden">
@@ -230,7 +232,8 @@ onMounted(async () => {
           </g>
         </svg>
         <p class="text-xl">ada</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>{{ uang_dashboard.produkTerjual }}</p>
         <p class="text-xl mt-3">produk terjual hari ini</p>
       </div>
       <div class="col-span-1 bg-white rounded-lg shadow-lg relative p-5 overflow-hidden">
@@ -258,40 +261,60 @@ onMounted(async () => {
             ></path>
           </g>
         </svg>
-        <p class="text-xl">melakukan</p>
-        <p class="text-5xl mt-3 font-semibold">354.000</p>
-        <p class="text-xl mt-3">transaksi hari ini</p>
+        <p class="text-xl">ada</p>
+        <p class="text-4xl mt-3 font-semibold" v-if="isLoadingDashboard">...</p>
+        <p class="text-4xl mt-3 font-semibold" v-else>{{ uang_dashboard.orderMasuk }}</p>
+        <p class="text-xl mt-3">transaksi masuk hari ini</p>
       </div>
     </div>
     <div class="w-full min-h-[300px] bg-white rounded-lg shadow-lg mt-7 p-5">
       <div class="w-full flex justify-between items-center mb-3">
         <p class="text-2xl">Pendapatan</p>
-        <div class="flex">
-          <flat-pickr
-            v-model="selectedDate"
-            :config="flatpickrConfig"
-            placeholder="Filter Sesuai Tanggal"
-          ></flat-pickr>
-
-          <select v-model="selectedMonth">
-            <option value="">Bulan</option>
-            <option value="1">Januari</option>
-            <option value="2">Februari</option>
-            <option value="3">Maret</option>
-            <option value="4">April</option>
-            <option value="5">Mei</option>
-            <option value="6">Juni</option>
-            <option value="7">Juli</option>
-            <option value="8">Agustus</option>
-            <option value="9">September</option>
-            <option value="10">Oktober</option>
-            <option value="11">November</option>
-            <option value="12">Desember</option>
-          </select>
-          <input type="number" v-model="selectedYear" placeholder="Tahun" />
+        <div class="flex justify-center items-center" v-if="!isLoading">
+          <div class="relative w-48 mr-3">
+            <div
+              @click="toggleDropdownStatus"
+              class="w-full px-3 py-2 border bg-blue-200 border-gray-300 rounded focus:outline-none relative focus:border-blue-500 cursor-pointer"
+            >
+              {{ selectedStatus ? selectedStatus : 'Pilih status' }}
+            </div>
+            <ul
+              v-if="dropdownStatus"
+              class="absolute w-full mt-1 bg-white border rounded border-gray-300 shadow z-10"
+            >
+              <li class="py-2 px-3 cursor-pointer hover:bg-gray-100">Filter PDF</li>
+              <li
+                @click="selectStatus('Sudah Dibayar')"
+                class="py-2 px-3 cursor-pointer hover:bg-gray-100"
+              >
+                Sudah Dibayar
+              </li>
+              <li
+                @click="selectStatus('Belum Dibayar')"
+                class="py-2 px-3 cursor-pointer hover:bg-gray-100"
+              >
+                Belum Dibayar
+              </li>
+            </ul>
+            <svg
+              fill="#000000"
+              viewBox="-6.5 0 32 32"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              class="absolute z-10 w-8 h-8 top-1 right-1"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+              <g id="SVGRepo_iconCarrier">
+                <title>dropdown</title>
+                <path
+                  d="M18.813 11.406l-7.906 9.906c-0.75 0.906-1.906 0.906-2.625 0l-7.906-9.906c-0.75-0.938-0.375-1.656 0.781-1.656h16.875c1.188 0 1.531 0.719 0.781 1.656z"
+                ></path>
+              </g>
+            </svg>
+          </div>
           <div
             @click="donwloadPDF"
-            v-if="!isLoading"
             class="p-2 bg-red-500 rounded-lg font-semibold text-white hover:text-red-500 flex items-center cursor-pointer group hover:bg-white border-2 border-white hover:border-red-500 transition"
           >
             <p>Download PDF</p>
@@ -342,7 +365,7 @@ onMounted(async () => {
       <div v-else class="w-full">
         <div v-if="groupedOrders.length !== 0" class="w-full">
           <div ref="testHtml" class="absolute -top-[5000px] w-full">
-            <div class="relative overflow-x-auto">
+            <div class="relative overflow-x-auto" v-if="selectedStatus == 'Sudah Dibayar'">
               <table
                 class="w-full text-md text-left rtl:text-right text-gray-500 dark:text-gray-400"
               >
@@ -350,7 +373,8 @@ onMounted(async () => {
                   class="text-base text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
                 >
                   <tr>
-                    <th scope="col" class="px-6 py-3">ORDER ID</th>
+                    <th scope="col" class="px-6 py-3">NO</th>
+                    <th scope="col" class="px-6 py-3">PEMBELI</th>
                     <th scope="col" class="px-6 py-3">TANGGAL</th>
                     <th scope="col" class="px-6 py-3">STATUS</th>
                     <th scope="col" class="px-6 py-3">TOTAL PEMBAYARAN</th>
@@ -359,14 +383,20 @@ onMounted(async () => {
                 <tbody>
                   <tr
                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                    v-for="order in filteredAndSortedOrders"
+                    v-for="(order, index) in filteredOrderSelesai"
                     :key="order.id"
                   >
                     <th
                       scope="row"
                       class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                     >
-                      <p class="text-gray-600">#{{ order.orders[0].order.unique_string }}</p>
+                      <p class="text-gray-600">{{ index + 1 }}</p>
+                    </th>
+                    <th
+                      scope="row"
+                      class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                    >
+                      <p class="text-gray-600">{{ order.orders[0].order.user.name }}</p>
                     </th>
                     <td class="px-6 py-4">
                       <p>{{ stringDate(order.orders[0].updated_at) }}</p>
@@ -400,7 +430,83 @@ onMounted(async () => {
                     <td class="px-6 py-4"></td>
                     <td class="px-6 py-4"></td>
                     <td class="px-6 py-4"></td>
-                    <td class="px-6 py-4">{{ formatter.format(addTotalHarga(groupedOrders)) }}</td>
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4">
+                      {{ formatter.format(addTotalHarga(filteredOrderSelesai)) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="relative overflow-x-auto" v-else-if="selectedStatus == 'Belum Dibayar'">
+              <table
+                class="w-full text-md text-left rtl:text-right text-gray-500 dark:text-gray-400"
+              >
+                <thead
+                  class="text-base text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+                >
+                  <tr>
+                    <th scope="col" class="px-6 py-3">NO</th>
+                    <th scope="col" class="px-6 py-3">PEMBELI</th>
+                    <th scope="col" class="px-6 py-3">TANGGAL</th>
+                    <th scope="col" class="px-6 py-3">STATUS</th>
+                    <th scope="col" class="px-6 py-3">TOTAL PEMBAYARAN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                    v-for="(order, index) in filteredOrderBelumDibayar"
+                    :key="order.id"
+                  >
+                    <th
+                      scope="row"
+                      class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                    >
+                      <p class="text-gray-600">{{ index + 1 }}</p>
+                    </th>
+                    <th
+                      scope="row"
+                      class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                    >
+                      <p class="text-gray-600">{{ order.orders[0].order.user.name }}</p>
+                    </th>
+                    <td class="px-6 py-4">
+                      <p>{{ stringDate(order.orders[0].updated_at) }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                      <p v-if="order.orders[0].status_uang == 'Sukses'" class="font-semibold">
+                        Sedang diproses oleh admin
+                      </p>
+                      <div v-else-if="order.orders[0].status_uang == 'Selesai'">
+                        <div
+                          class="w-full flex"
+                          v-if="order.orders[0].order.tipe_pembayaran == 'Online'"
+                        >
+                          <p class="text-green-600 font-semibold">Sudah dibayar</p>
+                        </div>
+                        <div
+                          class="w-full flex justify-center"
+                          v-else-if="order.orders[0].order.tipe_pembayaran == 'Cash'"
+                        >
+                          <p class="text-green-600 font-semibold">
+                            Order ini dibayar menggunakan cash
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <p>{{ formatter.format(order.totalHarga) }}</p>
+                    </td>
+                  </tr>
+                  <tr class="w-full bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4">
+                      {{ formatter.format(addTotalHarga(filteredOrderBelumDibayar)) }}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -412,7 +518,8 @@ onMounted(async () => {
                 class="text-base text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
               >
                 <tr>
-                  <th scope="col" class="px-6 py-3">ORDER ID</th>
+                  <th scope="col" class="px-6 py-3">NO</th>
+                  <th scope="col" class="px-6 py-3">PEMBELI</th>
                   <th scope="col" class="px-6 py-3">TANGGAL</th>
                   <th scope="col" class="px-6 py-3">TOTAL PEMBAYARAN</th>
                   <th scope="col" class="px-6 py-3">STATUS</th>
@@ -421,14 +528,20 @@ onMounted(async () => {
               <tbody>
                 <tr
                   class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                  v-for="order in groupedOrders"
+                  v-for="(order, index) in groupedOrders"
                   :key="order.id"
                 >
                   <th
                     scope="row"
                     class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                   >
-                    <p class="text-gray-600">#{{ order.orders[0].order.unique_string }}</p>
+                    <p class="text-gray-600">{{ index + 1 }}</p>
+                  </th>
+                  <th
+                    scope="row"
+                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                  >
+                    <p class="text-gray-600">{{ order.orders[0].order.user.name }}</p>
                   </th>
                   <td class="px-6 py-4">
                     <p>{{ stringDate(order.orders[0].updated_at) }}</p>

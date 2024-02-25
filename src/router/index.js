@@ -37,6 +37,22 @@ const router = createRouter({
       }
     },
     {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('../views/auth/ForgotPasswordView.vue'),
+      meta: {
+        authPage: true
+      }
+    },
+    {
+      path: '/reset-password/:token/:email',
+      name: 'reset-password',
+      component: () => import('../views/auth/ResetPasswordView.vue'),
+      meta: {
+        authPage: true
+      }
+    },
+    {
       path: '/kantin',
       name: 'kantin',
       component: () => import('../views/KantinListView.vue')
@@ -60,6 +76,24 @@ const router = createRouter({
       path: '/tujuan',
       name: 'tujuan',
       component: () => import('../views/TujuanView.vue'),
+      meta: {
+        requireAuth: true,
+        requirePelanggan: true
+      }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/ProfileView.vue'),
+      meta: {
+        requireAuth: true,
+        requirePelanggan: true
+      }
+    },
+    {
+      path: '/daftar-pengantar',
+      name: 'daftar-pengantar',
+      component: () => import('../views/auth/RegisterPengantar.vue'),
       meta: {
         requireAuth: true,
         requirePelanggan: true

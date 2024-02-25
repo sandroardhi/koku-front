@@ -23,7 +23,8 @@ const dropdownToggle = () => {
 }
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 const logout = async () => {
   try {

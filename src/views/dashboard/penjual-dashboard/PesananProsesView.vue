@@ -100,7 +100,8 @@ const deadlineKonfirmasi = (created_at) => {
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 onMounted(async () => {
   await OrderMasuk()
@@ -206,8 +207,10 @@ onMounted(async () => {
             </div>
           </div>
           <div class="w-full border-y py-2 flex justify-between">
-            <p class="text-xl">Total:</p>
-            <p class="text-xl">{{ formatter.format(tambah_harga_produk(order)) }}</p>
+            <p class="text-xl font-bold">Total:</p>
+            <p class="text-xl font-bold text-green-500">
+              {{ formatter.format(tambah_harga_produk(order)) }}
+            </p>
           </div>
           <form
             :action="route.path"
@@ -238,7 +241,10 @@ onMounted(async () => {
           <div v-if="order[0].status == 'Gagal Dibuat'" class="w-full">
             <p class="text-center text-red-800 text-lg font-semibold mt-3">Pesanan Gagal</p>
           </div>
-          <div v-if="order[0].order.status == 'Dikirim' && order[0].status !== 'Gagal Dibuat'" class="w-full">
+          <div
+            v-if="order[0].order.status == 'Dikirim' && order[0].status !== 'Gagal Dibuat'"
+            class="w-full"
+          >
             <p class="text-center text-green-800 text-lg font-semibold mt-3">Sedang Dikirim</p>
           </div>
           <div v-else-if="order[0].order.status == 'Konfirmasi Pembeli'" class="text-sm mt-3">

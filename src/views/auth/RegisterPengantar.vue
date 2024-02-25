@@ -1,23 +1,22 @@
 <script setup>
 import { RouterLink, useRouter } from 'vue-router'
 import { onMounted, ref, reactive } from 'vue'
-import Navbar from '../components/common/Navbar.vue'
-import Alert from '../components/common/Alert.vue'
+import Navbar from '../../components/common/Navbar.vue'
+import Alert from '../../components/common/Alert.vue'
 import { useAuthRepository } from '@/composables/useAuthRepository'
-import { useDashboardRepository } from '@/composables/useDashboardRepository'
+import { useAuthStore } from '../../stores/auth'
 
-const dashboard_repository = useDashboardRepository()
+const authStore = useAuthStore()
 const auth_repository = useAuthRepository()
 const isLoading = ref(false)
 const isLoadingSubmit = ref(false)
-const router = useRouter()
-const orders = ref([])
 
 const fetchUser = async () => {
   isLoading.value = true
   try {
     const { data } = await auth_repository.getUser()
     console.log(data)
+    credentials.user_id = data.user.id
     credentials.selectedChannel = data.user.channel
     credentials.no_rek = data.user.no_rek
   } catch (error) {
@@ -37,6 +36,21 @@ const clearError = () => {
   error.value = ''
 }
 
+const logout = async () => {
+  try {
+    await authStore.logout()
+  } catch (e) {
+    console.error(e)
+  } finally {
+    localStorage.removeItem('user')
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('role')
+    localStorage.removeItem('produk')
+    localStorage.removeItem('keranjang')
+    window.location.href = '/login'
+  }
+}
+
 const submit = async () => {
   if (credentials.selectedChannel == null) {
     return (error.value = 'Isi tujuan channel rekening dulu')
@@ -45,17 +59,18 @@ const submit = async () => {
   }
   const data = {
     _method: 'put',
+    user_id: credentials.user_id,
     channel: credentials.selectedChannel,
     no_rek: credentials.no_rek
   }
   try {
     isLoadingSubmit.value = true
-    await auth_repository.updateRekening(data)
+    await auth_repository.registerPengantar(data)
   } catch (error) {
     console.log(error)
   } finally {
     isLoadingSubmit.value = false
-    fetchUser()
+    logout()
   }
 }
 
@@ -69,66 +84,8 @@ const selectChannel = (option) => {
   dropdownChannel.value = false
 }
 
-const fetchUangMasuk = async () => {
-  isLoading.value = true
-  try {
-    const { data } = await dashboard_repository.uangRefundPembeli()
-    orders.value = data.uang_masuk
-  } catch (error) {
-    console.log(error)
-  } finally {
-    isLoading.value = false
-  }
-}
-const groupedOrders = ref([])
-
-const groupedOrder = () => {
-  const ordersMap = {}
-
-  orders.value.forEach((uang) => {
-    const uniqueString = uang.unique_string
-    if (!ordersMap[uniqueString]) {
-      ordersMap[uniqueString] = {
-        totalHarga: 0,
-        orders: []
-      }
-    }
-    uang.order_barangs.forEach((item) => {
-      ordersMap[uniqueString].totalHarga += item.harga
-    })
-    ordersMap[uniqueString].orders.push(uang)
-  })
-
-  // Convert grouped orders back to array format
-  groupedOrders.value = Object.values(ordersMap)
-}
-
-const toggleModal = (orderId) => {
-  const modal = document.getElementById(`modal_${orderId}`)
-
-  if (modal) {
-    modal.classList.toggle('hidden')
-  }
-}
-
-const formatter = new Intl.NumberFormat('id-ID', {
-  style: 'currency',
-  currency: 'IDR',
-  minimumFractionDigits: 0
-})
-const stringDate = (updated_at) => {
-  const updatedAtDate = new Date(updated_at)
-
-  // Format the date as desired
-  const formattedDate = updatedAtDate.toLocaleString() // Adjust this according to your desired format
-
-  return formattedDate
-}
-
 onMounted(async () => {
   fetchUser()
-  await fetchUangMasuk()
-  groupedOrder()
 })
 </script>
 
@@ -156,10 +113,10 @@ onMounted(async () => {
           </g>
         </svg>
       </router-link>
-      <p class="text-5xl mb-3">Refund</p>
+      <p class="text-5xl mb-3">Daftar Menjadi Pengantar</p>
     </div>
     <form class="w-[80%] mx-auto mt-5 pb-5" @submit.prevent="submit">
-      <p class="text-xl mb-5">Atur Rekening Untuk Refund</p>
+      <p class="text-xl mb-5">Isi data-data dibawah ini terlebih dahulu</p>
       <div class="relative z-0 w-full mb-5 group">
         <div class="mb-4">
           <label for="name" class="block mb-2">Rekening Pembayaran</label>
@@ -272,7 +229,7 @@ onMounted(async () => {
                 <img
                   src="../../public/bank_logo/Gopay_logo.svg"
                   class="w-[60px] h-[30px] object-contain bg-transparent"
-                  alt="Bank Mandiri"
+                  alt=""
                 />
                 <p class="ml-3">Gopay</p>
               </li>
@@ -283,7 +240,7 @@ onMounted(async () => {
                 <img
                   src="../../public/bank_logo/ShopeePay.svg"
                   class="w-[60px] h-[30px] object-contain bg-transparent"
-                  alt="Bank Mandiri"
+                  alt=""
                 />
                 <p class="ml-3">Shopeepay</p>
               </li>
@@ -318,116 +275,9 @@ onMounted(async () => {
     </form>
     <div class="w-[80%] mx-auto mt-5 pb-5">
       <p class="text-small text-gray-600">
-        *Admin tidak akan memulai proses pengembalian dana jika nomor rekening belum diisi.
+        *anda akan ter-logout otomatis setelah mendaftar. Akun anda akan tidak bisa diakses semetara
+        sampai disetujui oleh admin.
       </p>
-    </div>
-    <div role="status" v-if="isLoading" class="mx-auto w-full flex justify-center items-center">
-      <svg
-        aria-hidden="true"
-        class="inline w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-yellow-400"
-        viewBox="0 0 100 101"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-          fill="currentColor"
-        />
-        <path
-          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-          fill="currentFill"
-        />
-      </svg>
-      <span class="sr-only">Loading...</span>
-    </div>
-    <div class="w-[80%] mx-auto" v-else>
-      <p class="text-2xl">Data Refund</p>
-      <div v-if="orders.length !== 0" class="w-full">
-        <div
-          class="w-full py-4 flex justify-between items-center text-lg border-b relative"
-          v-for="order in groupedOrders"
-          :key="order.orders[0].id"
-        >
-          <div class="flex w-1/2 justify-between">
-            <p class="text-gray-600">#{{ order.orders[0].unique_string }}</p>
-            <p>{{ formatter.format(order.totalHarga) }}</p>
-            <p>{{ stringDate(order.orders[0].order_barangs[0].updated_at) }}</p>
-          </div>
-          <div class="flex w-1/2 justify-end">
-            <p v-if="order.orders[0].order_barangs[0].status_uang == 'Refund'">
-              Sedang diproses oleh admin
-            </p>
-            <div v-else-if="order.orders[0].order_barangs[0].status_uang == 'Refunded'">
-              <div
-                class="w-full flex justify-center"
-                v-if="order.orders[0].tipe_pembayaran == 'Online'"
-              >
-                <p class="text-green-600 font-semibold">Sudah dibayar<span class="mx-5">|</span></p>
-                <p
-                  class="text-blue-600 underline cursor-pointer font-semibold"
-                  @click="toggleModal(order.orders[0].id)"
-                >
-                  Lampiran
-                </p>
-                <!-- MODAL -->
-                <div v-if="modal" class="fixed inset-0 bg-black opacity-50"></div>
-                <div
-                  :id="'modal_' + order.orders[0].id"
-                  class="hidden bg-[rgba(0,0,0,0.5)] overflow-y-auto bg-overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 min-h-[calc(100%)] transition-all duration-300"
-                >
-                  <div class="relative p-4 w-full max-w-xl mx-auto my-5">
-                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                      <div
-                        class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600"
-                      >
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                          Lampiran
-                        </h3>
-                        <button
-                          type="button"
-                          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                          @click="toggleModal(order.orders[0].id)"
-                        >
-                          <svg
-                            class="w-3 h-3"
-                            aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 14 14"
-                          >
-                            <path
-                              stroke="currentColor"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                            />
-                          </svg>
-                          <span class="sr-only">Close modal</span>
-                        </button>
-                      </div>
-                      <!-- Modal body -->
-                      <div class="flex items-center flex-col justify-between px-4 py-2">
-                        <div class="w-full border-b pb-3">
-                          <p class="pt-2 pb-1 text-lg font-semibold">Bukti Pembayaran :</p>
-                          <div class="w-full justify-center items-center">
-                            <img
-                              :src="`http://localhost:8000/storage/${order.orders[0].order_barangs[0].lampiran}`"
-                              alt="Lampiran"
-                              class="w-full h-full object-contain"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- END OF MODAL -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

@@ -27,10 +27,16 @@ export const useDashboardRepository = () => {
 
   // PENJUAL
   const uangMasukPenjual = () => http.get('/api/order-penjual/uang-masuk')
+
+  const dashboardPenjual = () => http.get('/api/order-penjual/dashboard')
+
   // END OF PENJUAL
 
   // PENGANTAR
   const uangMasukPengantar = () => http.get('/api/order-pengantar/uang-masuk')
+
+  const dashboardPengantar = () => http.get('/api/order-pengantar/dashboard')
+
   // END OF PENGANTAR
 
   return {
@@ -44,6 +50,8 @@ export const useDashboardRepository = () => {
     bayarRefund,
     uangRefundPembeli,
     uangMasukPenjual,
-    uangMasukPengantar
+    uangMasukPengantar,
+    dashboardPenjual,
+    dashboardPengantar
   }
 }

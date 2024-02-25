@@ -125,7 +125,8 @@ const hapus = async (order_id) => {
 // helper
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 const excerpt = (text, maxLength = 30, indicator = '..') => {
   let textCopy = text

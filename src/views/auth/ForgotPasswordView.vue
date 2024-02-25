@@ -1,51 +1,19 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
-import { reactive, ref } from 'vue'
-import { useAuthStore } from '../../stores/auth'
-import Alert from '../../components/common/Alert.vue'
+import axios from 'axios'
+import { ref } from 'vue'
 
-const authStore = useAuthStore()
-
-const route = useRoute()
-const router = useRouter()
-
-const credentials = reactive({
-  email: '',
-  password: '',
-  device_name: 'browser'
-})
+const email = ref('')
 const isLoading = ref(false)
 
-const error = ref('')
-
-const clearError = () => {
-  error.value = ''
-}
-
-const onSubmit = async () => {
-  isLoading.value = true
-  await authStore.csrf()
+const submitForm = async () => {
   try {
-    await authStore.login(credentials)
-    const role = localStorage.getItem('role')
-    if (role == 'user') {
-      router.replace({ name: 'home' })
-    } else {
-      router.replace({ name: 'index' })
-    }
-  } catch (e) {
-    if (e.response && e.response.status === 422) {
-      const validationErrors = e.response.data.errors
-
-      if (validationErrors && validationErrors.email) {
-        error.value = validationErrors.email[0]
-      }
-    }
-    if (e.response && e.response.status === 403) {
-      error.value = e.response.data.message
-    }
+    const response = await axios.post('http://127.0.0.1:8000/api/forgotpassword', {
+      email: email.value
+    })
+    console.log(response.data)
+  } catch (error) {
+    console.error(error)
   }
-  isLoading.value = false
 }
 </script>
 
@@ -55,64 +23,34 @@ const onSubmit = async () => {
       <router-link to="/" class="absolute top-4 left-3">
         <span class="text-3xl text-black font-bold">KoKu!</span>
       </router-link>
-      <form
-        :action="route.path"
-        method="post"
-        class="mt-36 p-4 lg:mt-0 lg:p-40"
-        @submit.prevent="onSubmit"
-      >
+      <div method="post" class="mt-36 p-4 lg:mt-0 lg:p-40">
+        <p class="text-2xl mb-3">Forgot Password</p>
         <div class="mb-4">
           <label for="email" class="block mb-2">Email</label>
           <input
             type="text"
             class="border p-2 w-full bg-gray-50 rounded outline-none focus:ring-2 focus:ring-blue-300 transition-all"
             placeholder="someone@example.com"
-            v-model="credentials.email"
+            v-model="email"
             required
           />
         </div>
-        <div class="mb-4">
-          <label for="password" class="block mb-2">Password</label>
-          <input
-            type="password"
-            class="border p-2 w-full bg-gray-50 rounded outline-none focus:ring-2 focus:ring-blue-300 transition-all"
-            v-model="credentials.password"
-            placeholder="password"
-            required
-          />
-        </div>
-        <Alert
-          type="danger"
-          :message="error"
-          :alertToggle="() => clearError()"
-          dismissable
-          class="w-full mb-3"
-          v-if="error"
-        />
         <button
           type="submit"
+          @click="submitForm"
           class="border p-3 text-white active:bg-yellow-400 hover:bg-yellow-200 w-full rounded bg-yellow-300 transition-colors duration-300"
         >
           <p v-if="isLoading">Loading...</p>
-          <p v-else>Masuk</p>
+          <p v-else>Kirim email</p>
         </button>
         <!-- <p class="text-center mt-5 font-semibold">Create An Account ? <router-link class="text-yellow-600 hover:text-yellow-700 hover:text-xl duration-300" to="/register" >Register</router-link></p> -->
         <p class="text-center mt-5 font-semibold">
-          Belum punya akun?
-          <router-link class="text-yellow-300 hover:text-yellow-200 duration-300" to="/register"
-            >Register</router-link
+          Coba login lagi?
+          <router-link class="text-yellow-300 hover:text-yellow-200 duration-300" to="/login"
+            >Click disini</router-link
           >
         </p>
-        <p class="text-center mt-2 -mb-3 font-semibold">Atau</p>
-        <p class="text-center mt-5 font-semibold">
-          Kamu lupa password?
-          <router-link
-            class="text-yellow-300 hover:text-yellow-200 duration-300"
-            to="/forgot-password"
-            >click disini</router-link
-          >
-        </p>
-      </form>
+      </div>
     </section>
     <section class="col-span-6 bg-white min-h-screen shadow-lg relative">
       <div class="w-full mx-auto flex flex-col justify-center items-center mt-10">

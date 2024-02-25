@@ -8,15 +8,18 @@ const order_repository = useOrderRepository()
 
 const route = useRoute()
 const router = useRouter()
-const isLoading = ref()
+const isLoading = ref(false)
 const orders = ref([])
 
 const OrderGagal = async () => {
+  isLoading.value = true
   try {
     const { data } = await order_repository.orderPenjualGagal()
     orders.value = Object.values(data)
   } catch (error) {
     console.log(error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -34,7 +37,8 @@ const tambah_harga_produk = (order) => {
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 
 onMounted(() => {

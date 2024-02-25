@@ -122,7 +122,8 @@ const togglePengantarNonactive = async () => {
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 onMounted(async () => {
   await OrderMasuk()
@@ -266,7 +267,6 @@ onMounted(async () => {
                   <p class="text-center text-lg font-semibold">
                     Pesanan <span class="text-green-400">selesai.</span>
                   </p>
-                  <p class="text-center text-lg font-semibold">Pesanan Bisa Diambil Sekarang.</p>
                 </div>
                 <div
                   v-else-if="categorizedOrder.produkList[0].status == 'Menunggu Konfirmasi'"

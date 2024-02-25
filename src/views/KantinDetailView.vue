@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/common/Navbar.vue'
 import Button from '../components/common/Button.vue'
 import { useKantinRepository } from '@/composables/useKantinRepository'
 import { useKeranjangStore } from '@/stores/keranjang'
+import { useAuthStore } from '../stores/auth'
 
+const authStore = useAuthStore()
 const keranjangStore = useKeranjangStore()
 
 const kantin_repository = useKantinRepository()
@@ -13,6 +15,7 @@ const kantin_repository = useKantinRepository()
 const isLoading = ref(false)
 const isLoadingProduct = ref({})
 const route = useRoute()
+const router = useRouter()
 const kantin = ref({})
 
 const fetchKantin = async () => {
@@ -29,12 +32,19 @@ const fetchKantin = async () => {
 }
 
 const addToCart = async (productId) => {
+  if (authStore.isAuthenticated == false) {
+    router.push('/login')
+  }
   isLoadingProduct.value[productId] = true
   try {
     const data = {
       productId: productId
     }
     await keranjangStore.addToCart(data)
+    // console.log(response.response.status)
+    // if (response.status == 401) {
+    //   router.push('/login')
+    // }
   } catch (e) {
     console.log(e)
   } finally {
@@ -111,7 +121,8 @@ const categorizedProducts = computed(() => {
 
 const formatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',
-  currency: 'IDR'
+  currency: 'IDR',
+  minimumFractionDigits: 0
 })
 
 onMounted(async () => {

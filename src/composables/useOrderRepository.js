@@ -16,18 +16,19 @@ export const useOrderRepository = () => {
   const orderProses = () => http.get(`api/order/order-proses`)
 
   const orderSelesai = () => http.get(`api/order/order-selesai`)
-  
-  const updateUserStatusSelesai = (data) => http.post(`api/order/order-user-update-selesai`, data)
 
+  const updateUserStatusSelesai = (data) => http.post(`api/order/order-user-update-selesai`, data)
 
   // END OF USER ORDER
 
   // PENJUAL ORDER
 
   const orderMasuk = () => http.get(`api/order-penjual/order-masuk`)
-  
+
+  const orderPenjualCount = () => http.get(`api/order-penjual/order-count`)
+
   const updateStatusDibuat = (data) => http.post(`api/order-penjual/order-update-dibuat`, data)
-  
+
   const updateStatusSelesai = (data) => http.post(`api/order-penjual/order-update-selesai`, data)
 
   const orderPenjualSelesai = () => http.get(`api/order-penjual/order-selesai`)
@@ -35,6 +36,12 @@ export const useOrderRepository = () => {
   const orderPenjualGagal = () => http.get(`api/order-penjual/order-cancel`)
 
   // END OF PENJUAL ORDER
+
+  // PENGANTAR ORDER
+
+  const orderPengantarCount = () => http.get(`api/order-pengantar/order-count`)
+
+  // END OF PENGANTAR ORDER
 
   return {
     payAndCreateOrder,
@@ -48,6 +55,8 @@ export const useOrderRepository = () => {
     updateStatusDibuat,
     updateStatusSelesai,
     orderPenjualSelesai,
-    orderPenjualGagal
+    orderPenjualGagal,
+    orderPenjualCount,
+    orderPengantarCount
   }
 }

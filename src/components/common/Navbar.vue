@@ -313,7 +313,10 @@ const excerpt = (text, maxLength = 10, indicator = '...') => {
                   <router-link to="/refund">
                     <li class="p-2 bg-white text-black border-b">Refund</li>
                   </router-link>
-                  <li class="p-2 bg-white text-black" @click="logout">Logout</li>
+                  <li class="p-2 bg-white text-black border-b" @click="logout">Logout</li>
+                  <router-link to="/daftar-pengantar">
+                    <li class="p-2 bg-white text-black">Daftar Menjadi Pengantar</li>
+                  </router-link>
                 </ul>
               </button>
             </div>

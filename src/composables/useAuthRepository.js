@@ -13,6 +13,9 @@ export const useAuthRepository = () => {
   const registerPenjual = (credentials) => {
     return http.post('api/auth/register-penjual', credentials)
   }
+  const registerPengantar = (credentials) => {
+    return http.post('api/auth/register-pengantar', credentials)
+  }
   const logout = () => {
     return http.get('api/auth/logout')
   }
@@ -41,6 +44,7 @@ export const useAuthRepository = () => {
     tujuan,
     create_tujuan,
     registerPenjual,
-    updateRekening
+    updateRekening,
+    registerPengantar
   }
 }
